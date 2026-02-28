@@ -765,7 +765,8 @@ function initStella() {
   }
 
   function project(rv, W, H) {
-    const fov = 2.8;
+    // fov=14 → near-orthographic; lower values increase perspective depth
+    const fov = 14;
     const scale = fov / (fov + rv.z + 0.5);
     return {
       px: W/2 + rv.x * scale * Math.min(W, H) * 0.5,
@@ -823,6 +824,57 @@ function initStella() {
       const ia = CUBE_CORNERS.findIndex(c => c[0]===a[0] && c[1]===a[1] && c[2]===a[2]);
       const ib = CUBE_CORNERS.findIndex(c => c[0]===b[0] && c[1]===b[1] && c[2]===b[2]);
       drawLine(ctx, projCorners[ia], projCorners[ib], '#3a3a5a', 0.5, 0.8);
+    });
+
+    // ── Axis lines from origin (0,0,0) ──
+    const AXES = [
+      { tip:{x:1.28,y:0,z:0}, label:'X',  sub:'Locus  (Internal → External)', color:'#5599FF' },
+      { tip:{x:0,y:1.28,z:0}, label:'Y',  sub:'Coupling  (Low → High)',        color:'#55CC88' },
+      { tip:{x:0,y:0,z:1.28}, label:'Z',  sub:'Temporality  (Static → Dynamic)', color:'#BB88FF' },
+    ];
+    const axO = project(rotate({x:0,y:0,z:0}), W, H);
+    AXES.forEach(ax => {
+      const axT = project(rotate(ax.tip), W, H);
+      // dashed axis line
+      ctx.save();
+      ctx.globalAlpha = 0.65;
+      ctx.strokeStyle = ax.color;
+      ctx.lineWidth = 1.2;
+      ctx.setLineDash([5, 4]);
+      ctx.beginPath();
+      ctx.moveTo(axO.px, axO.py);
+      ctx.lineTo(axT.px, axT.py);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+      // arrowhead
+      const angle = Math.atan2(axT.py - axO.py, axT.px - axO.px);
+      const aLen = 7;
+      ctx.save();
+      ctx.globalAlpha = 0.75;
+      ctx.strokeStyle = ax.color;
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(axT.px, axT.py);
+      ctx.lineTo(axT.px - aLen*Math.cos(angle-0.4), axT.py - aLen*Math.sin(angle-0.4));
+      ctx.moveTo(axT.px, axT.py);
+      ctx.lineTo(axT.px - aLen*Math.cos(angle+0.4), axT.py - aLen*Math.sin(angle+0.4));
+      ctx.stroke();
+      ctx.restore();
+      // label: axis letter bold, then sub description smaller
+      const ox = axT.px + 9, oy = axT.py + 3;
+      ctx.save();
+      ctx.globalAlpha = 0.9;
+      ctx.fillStyle = ax.color;
+      ctx.font = 'bold 11px Inter, sans-serif';
+      ctx.fillText(ax.label, ox, oy);
+      ctx.restore();
+      ctx.save();
+      ctx.globalAlpha = 0.55;
+      ctx.fillStyle = ax.color;
+      ctx.font = '9px Inter, sans-serif';
+      ctx.fillText(ax.sub, ox + 14, oy);
+      ctx.restore();
     });
 
     // Project the 8 named vertices
@@ -890,17 +942,6 @@ function initStella() {
 
     animId = requestAnimationFrame(draw);
   }
-
-  // Auto-rotate when idle
-  let idleTimer;
-  function resetIdle() {
-    clearInterval(idleTimer);
-    idleTimer = setInterval(() => {
-      if (!dragging) { rotY += 0.003; }
-    }, 16);
-  }
-  resetIdle();
-  canvas.addEventListener('mousedown', resetIdle);
 
   draw();
 }
