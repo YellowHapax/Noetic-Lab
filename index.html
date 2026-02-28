@@ -279,6 +279,82 @@
     }
     .dock-item.open .dock-dot { opacity: 1; }
 
+    /* ── Desktop icons ────────────────────────────────────────── */
+    #desktop-icons {
+      position: absolute;
+      top: 16px; left: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      z-index: 5;
+    }
+    .dsk-icon {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      padding: 8px 6px 6px;
+      border-radius: 6px;
+      cursor: pointer;
+      width: 80px;
+      border: 1px solid transparent;
+      transition: background 0.12s, border-color 0.12s;
+      user-select: none;
+    }
+    .dsk-icon:hover { background: rgba(255,255,255,0.07); }
+    .dsk-icon.selected {
+      background: rgba(218,165,32,0.12);
+      border-color: rgba(218,165,32,0.35);
+    }
+    .dsk-icon-img {
+      width: 48px; height: 48px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.5);
+    }
+    .dsk-icon-label {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text);
+      text-align: center;
+      line-height: 1.3;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.8);
+      word-break: break-word;
+      max-width: 70px;
+    }
+
+    /* ── Dock toggle ──────────────────────────────────────────── */
+    #dock-toggle {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-dim);
+      font-size: 14px;
+      width: 30px; height: 30px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s, color 0.15s;
+      user-select: none;
+    }
+    #dock-toggle:hover { background: rgba(255,255,255,0.1); color: var(--text); }
+    #dock-toggle.dock-hidden-mode { color: var(--gold); border-color: var(--gold-dim); }
+
+    /* when dock is hidden, desktop bottom flush */
+    body.dock-off #desktop { bottom: 0; }
+    body.dock-off #dock { transform: translateY(100%); }
+    #dock { transition: transform 0.25s ease; }
+
     /* ── Boot screen ───────────────────────────────────────── */
     #boot {
       position: fixed; inset: 0; z-index: 9999;
@@ -346,10 +422,33 @@
 </div>
 
 <!-- Desktop surface -->
-<div id="desktop"></div>
+<div id="desktop">
+  <!-- Desktop icons -->
+  <div id="desktop-icons">
+    <div class="dsk-icon" id="dsk-library" ondblclick="WM.focus('library')" onclick="selectDskIcon('dsk-library')">
+      <div class="dsk-icon-img" style="background:linear-gradient(135deg,#2a1a0d,#1a0d00);color:var(--gold);border:1px solid #3a2a10;">✦</div>
+      <div class="dsk-icon-label">Library</div>
+    </div>
+    <div class="dsk-icon" id="dsk-readme" ondblclick="WM.focus('readme')" onclick="selectDskIcon('dsk-readme')">
+      <div class="dsk-icon-img" style="background:linear-gradient(135deg,#1a2a1a,#0d1a0d);color:#4CAF50;border:1px solid #2a3a2a;">📋</div>
+      <div class="dsk-icon-label">About</div>
+    </div>
+    <div class="dsk-icon" id="dsk-stella" ondblclick="WM.focus('stella')" onclick="selectDskIcon('dsk-stella')">
+      <div class="dsk-icon-img" style="background:linear-gradient(135deg,#0d1a2a,#0a1020);color:var(--sky);border:1px solid #1a2a3a;font-size:20px;">◈</div>
+      <div class="dsk-icon-label">Stella</div>
+    </div>
+    <div class="dsk-icon" id="dsk-mbd" ondblclick="WM.focus('mbd')" onclick="selectDskIcon('dsk-mbd')">
+      <div class="dsk-icon-img" style="background:linear-gradient(135deg,#1a1520,#0d0a18);color:#C5A059;border:1px solid #2a2030;font-family:'Playfair Display',serif;">M</div>
+      <div class="dsk-icon-label">MBD Paper</div>
+    </div>
+  </div>
+</div>
 
 <!-- Dock -->
 <div id="dock">
+  <!-- Toggle button bottom-left -->
+  <button id="dock-toggle" onclick="toggleDock()" title="Toggle taskbar">⊞</button>
+
   <div class="dock-item" id="dock-readme"   onclick="WM.focus('readme')">
     <div class="dock-icon" style="background: linear-gradient(135deg,#1a2a1a,#0d1a0d); color:#4CAF50; border:1px solid #2a3a2a;">📋</div>
     <div class="dock-label">About</div>
@@ -806,6 +905,67 @@ function initStella() {
   draw();
 }
 
+
+// ══════════════════════════════════════════════════════
+// Desktop icon selection + dock toggle
+// ══════════════════════════════════════════════════════
+window.selectDskIcon = function(id) {
+  document.querySelectorAll('.dsk-icon').forEach(el => el.classList.remove('selected'));
+  document.getElementById(id)?.classList.add('selected');
+  // deselect on click elsewhere on desktop
+};
+
+document.getElementById('desktop').addEventListener('click', e => {
+  if (!e.target.closest('.dsk-icon') && !e.target.closest('.win')) {
+    document.querySelectorAll('.dsk-icon').forEach(el => el.classList.remove('selected'));
+  }
+});
+
+// Make desktop icons individually draggable
+(function() {
+  document.querySelectorAll('.dsk-icon').forEach(icon => {
+    let dragging = false, sx, sy, ox, oy, moved = false;
+    icon.addEventListener('mousedown', e => {
+      // Only left button, not on dblclick path if it's a fast click
+      dragging = true; moved = false;
+      sx = e.clientX; sy = e.clientY;
+      const rect = icon.getBoundingClientRect();
+      ox = rect.left; oy = rect.top;
+      e.stopPropagation();
+    });
+    document.addEventListener('mousemove', e => {
+      if (!dragging) return;
+      const dx = e.clientX - sx, dy = e.clientY - sy;
+      if (Math.abs(dx) > 4 || Math.abs(dy) > 4) {
+        moved = true;
+        // Pull out of flow into absolute on first real drag
+        if (icon.parentElement.id === 'desktop-icons') {
+          const container = document.getElementById('desktop-icons');
+          const containerRect = container.getBoundingClientRect();
+          icon.style.position = 'fixed';
+          icon.style.left = (ox) + 'px';
+          icon.style.top  = (oy) + 'px';
+          icon.style.zIndex = 6;
+          icon.style.margin = '0';
+          document.getElementById('desktop').appendChild(icon);
+        }
+        icon.style.left = (ox + (e.clientX - sx)) + 'px';
+        icon.style.top  = (oy + (e.clientY - sy)) + 'px';
+      }
+    });
+    document.addEventListener('mouseup', () => { dragging = false; });
+  });
+})();
+
+let dockVisible = true;
+window.toggleDock = function() {
+  dockVisible = !dockVisible;
+  document.body.classList.toggle('dock-off', !dockVisible);
+  const btn = document.getElementById('dock-toggle');
+  btn.classList.toggle('dock-hidden-mode', !dockVisible);
+  btn.title = dockVisible ? 'Hide taskbar' : 'Show taskbar';
+  btn.textContent = dockVisible ? '⊞' : '⊟';
+};
 
 // ══════════════════════════════════════════════════════
 // Boot sequence
