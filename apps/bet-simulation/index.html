@@ -494,11 +494,18 @@ let tMax      = 0;     // how many steps to draw (animated)
 function drawChart(canvas, data, tDraw) {
   if (!data) return;
 
-  const dpr = window.devicePixelRatio || 1;
-  const W   = canvas.offsetWidth;
-  const H   = canvas.offsetHeight;
-  canvas.width  = W * dpr;
-  canvas.height = H * dpr;
+  const dpr  = window.devicePixelRatio || 1;
+  // Read dimensions from the parent container — reliable even inside iframes
+  const rect = canvas.parentElement.getBoundingClientRect();
+  const W    = rect.width;
+  const H    = rect.height;
+  // Guard: layout hasn't settled yet — skip silently
+  if (W < 4 || H < 4) return;
+
+  canvas.width  = Math.round(W * dpr);
+  canvas.height = Math.round(H * dpr);
+  canvas.style.width  = W + 'px';
+  canvas.style.height = H + 'px';
   const ctx = canvas.getContext('2d');
   ctx.scale(dpr, dpr);
 
@@ -776,33 +783,42 @@ document.getElementById('run-btn').addEventListener('click', () => {
 });
 
 
-// ══════════════════════════════════════════════════════════════════
-// Resize handler
-// ══════════════════════════════════════════════════════════════════
-
-let resizeTimer;
-window.addEventListener('resize', () => {
-  clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(() => {
-    if (simData) drawChart(document.getElementById('chart'), simData, 200);
-  }, 80);
-});
-
-
-// ══════════════════════════════════════════════════════════════════
-// Initial draw (show empty grid)
-// ══════════════════════════════════════════════════════════════════
+// ResizeObserver handles both initial draw and window resize.
+// Fires as soon as #chart-wrap has real pixel dimensions — works
+// correctly inside iframes where offsetWidth/scrollWidth may be 0
+// until the parent document finishes layout.
 
 window.addEventListener('load', () => {
   const canvas = document.getElementById('chart');
-  // Draw placeholder grid with 0 data steps
-  const empty = {
-    ctrl:   { B: [0.15], kappa: [0.45], H: [0.30] },
-    flood:  { B: [0.15], kappa: [0.45], H: [0.30] },
-    rezero: { B: [0.15], kappa: [0.45], H: [0.30] },
-  };
-  // Trigger real-size draw after layout settles
-  setTimeout(() => drawChart(canvas, empty, 0), 50);
+  const wrap   = document.getElementById('chart-wrap');
+  let booted   = false;
+
+  function runDefaultSim() {
+    if (booted) return;
+    const rect = wrap.getBoundingClientRect();
+    if (rect.width < 4 || rect.height < 4) return;
+    booted = true;
+
+    const cfg = getParams();
+    simData = {
+      ctrl:   simulate('control',    cfg),
+      flood:  simulate('fact_flood', cfg),
+      rezero: simulate('rezero',     cfg),
+    };
+    startAnim(canvas, simData);
+  }
+
+  const ro = new ResizeObserver(() => {
+    if (!booted) {
+      runDefaultSim();
+    } else if (simData) {
+      drawChart(canvas, simData, 200);
+    }
+  });
+  ro.observe(wrap);
+
+  // Belt-and-suspenders fallback for sluggish iframe layouts
+  setTimeout(runDefaultSim, 200);
 });
 </script>
 </body>
