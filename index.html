@@ -454,7 +454,7 @@
     <div class="dock-label">About</div>
     <div class="dock-dot"></div>
   </div>
-  <div class="dock-item open" id="dock-library" onclick="WM.focus('library')">
+  <div class="dock-item" id="dock-library" onclick="WM.focus('library')">
     <div class="dock-icon" style="background: linear-gradient(135deg,#2a1a0d,#1a0d00); color:var(--gold); border:1px solid #3a2a10; font-size:18px;">✦</div>
     <div class="dock-label">Library</div>
     <div class="dock-dot"></div>
@@ -630,7 +630,7 @@ function buildLibraryWindow() {
 
   WM.create({
     id: 'library', title: 'Noetic Library', accentColor: 'var(--gold)',
-    x: 60, y: 40, w: 860, h: 560, body
+    x: 60, y: 40, w: 860, h: 560, body, minimized: true
   });
 
   // Load first doc
@@ -664,7 +664,7 @@ function buildMBDWindow() {
   const body = `<iframe class="win-iframe" src="apps/mbd-presentation/index.html" id="mbd-iframe" loading="lazy" title="Memory as Baseline Deviation — Interactive Presentation"></iframe>`;
   WM.create({
     id: 'mbd', title: 'Memory as Baseline Deviation — Presentation', accentColor: '#C5A059',
-    x: 100, y: 80, w: 1100, h: 640, body, minimized: true
+    x: 100, y: 40, w: 1100, h: 660, body
   });
 }
 
@@ -1028,8 +1028,8 @@ window.addEventListener('load', () => {
   setTimeout(() => {
     bootEl.classList.add('fade-out');
     setTimeout(() => { bootEl.style.display = 'none'; }, 700);
-    // Focus library on boot
-    WM.focus('library');
+    // Focus MBD presentation on boot
+    WM.focus('mbd');
   }, 1600);
 });
 </script>
