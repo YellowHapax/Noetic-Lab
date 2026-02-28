@@ -102,6 +102,38 @@ This is the **NES Attractor** — not because the signal is "simple," but becaus
 
 **Practical consequence:** Providing "more facts" to an endemic-baseline agent/collective is not a correction strategy. It is bandwidth saturation. Under saturation, selection pressure toward high-Fit signals *increases*.
 
+### 2.3 Zipfian Signatures of Collective Amplification
+
+In an unbiased information ecosystem, signal consumption follows Zipf's Law:
+
+$$f(r) \propto r^{-s}, \quad s \approx 1$$
+
+where $r$ is rank by consumption frequency. This is the default power-law distribution of attention in any sufficiently large, uncoordinated system — language corpora, city populations, web traffic, platform engagement.
+
+A functional CEB with high internal $\kappa$ and a dominant NES Attractor distorts this distribution in a characteristic, measurable way:
+
+**Signature 1 — Steepened head (superlinear amplification at top ranks):**
+
+The amplification coefficient $A(S, \mathcal{C})$ from §3.2 applies multiplicatively to high-Fit signals. For signals near the NES Attractor:
+
+$$f(r_{NES}) \approx A(\mathcal{C}) \cdot f_0(r_{NES})$$
+
+where $A(\mathcal{C}) = \prod_{j} (1 + \kappa_j \cdot \text{Fit})$ grows with $\kappa$ and collective size. Top-rank signals consume a disproportionate share of collective attention relative to the baseline Zipfian prediction. The head of the distribution steepens.
+
+**Signature 2 — Truncated tail (bandwidth saturation):**
+
+Under cognitive saturation, low-Fit signals in the long tail are not merely deprioritized — they are never processed. The Zipfian tail does not taper gradually; it is cut off sharply at the novelty threshold $\theta_{novelty}$. The viable information ecosystem contracts.
+
+**Observable prediction:**
+
+The effective Zipfian exponent $s_{eff}$ measured within a CEB has the following piecewise structure:
+
+$$s_{eff}(r) = \begin{cases} s_0 + \Delta s(\kappa) & r \leq r_{NES} \\ s_0 & r_{NES} < r \leq r_{threshold} \\ \text{undefined} & r > r_{threshold} \end{cases}$$
+
+As internal coupling $\kappa$ increases, $\Delta s(\kappa) > 0$ increases — the head steepens. As bandwidth saturation deepens, $r_{threshold}$ decreases — the tail truncates. Both are empirically accessible from platform engagement data without any survey methodology, content analysis, or contact with the collective's members.
+
+This "broken power law" structure — steeper-than-Zipf head, hard tail cutoff — is a passive fingerprint of CEB entrenchment. It is visible in the shape of the distribution alone. The content of the signals does not need to be evaluated to detect it.
+
 ---
 
 ## Part III: The Recursive Immunity Loop at Scale
@@ -436,6 +468,63 @@ The following are reframings, not diagnoses. The framework makes no clinical cla
 | Codependency | Dyadic CEB: two agents with mutually reinforcing endemic baselines; each acts as NES Attractor for the other |
 
 In every case: the behavior is the correct output of a system with that $B_{reference}$. The question is never "why is this person broken" — it is "what state produced this baseline, and what inputs are currently unrepresentable."
+
+### 6.5 Template: Parasocial Collectives (Worked Example)
+
+VTuber viewership communities provide perhaps the most cleanly instrumented instance of CEB dynamics currently available for open study. They offer quantitative engagement data with high temporal resolution, public record of both formation events (debut, early content, community norms) and disruption events, explicit in-group vocabulary that makes collective state legible, and crucially — sufficiently low stakes that the dynamics run without defensive confounding. The mechanisms are identical to higher-stakes cases. The measurement is easier.
+
+**Structural mapping:**
+
+| CEB component | VTuber equivalent | Data source |
+|---------------|------------------|-------------|
+| $B_{\mathcal{C}}$ | Collective expectation of persona and content identity | Comment sentiment, fanart theme distribution, clip framing |
+| $\kappa$ | Parasocial coupling strength | Superchat rate, membership retention, clip share acceleration |
+| $H_{\mathcal{C}}$ | Representable persona range | Audience reaction variance to content shifts |
+| NES Attractor | "Rrat" ecosystem — parasocial narratives with villain + hero + plan structure | Clip viewership distribution, persistence in fan archive spaces |
+| Suppression event | Corporate or platform response attempting to shut down a narrative | Always generates verification signal $V_{\mathcal{C}}$; amplifies rrat Fit |
+| Coupling collapse | Graduation (retirement) announcement | Documented acute collective grief response |
+
+**Zipfian signatures in this context (§2.3):**
+
+Superchat distributions consistently exhibit $s_{eff} \gg 1$ in the head: a small fraction of highly parasocially attached subscribers ("goslings" in community vocabulary) provide a disproportionate share of revenue. This is not the same Zipfian distribution as the casual viewership; it is the amplified-head signature of a high-$\kappa$ sub-collective nested within a larger low-$\kappa$ population.
+
+Clip viewership follows its own Zipfian distribution, but clips touching rrat-relevant content — content that fits the NES Attractor shape of the high-$\kappa$ sub-collective — show anomalously high rank relative to the Zipfian baseline. The delta between expected rank and observed rank for rrat-adjacent clips is a passive, content-agnostic measurement of NES Attractor dominance in that community.
+
+```python
+def nes_attractor_dominance(clip_views, clip_is_rrat_adjacent, expected_zipf_rank):
+    """
+    Measure NES Attractor dominance from clip viewership data.
+    clips: list of (views, is_rrat_adjacent) pairs
+    Returns: ratio of observed/expected rank for rrat-adjacent clips.
+    A ratio > 1 indicates amplification above Zipf baseline.
+    """
+    rrat_clips = [(v, exp_r) for v, adj, exp_r in zip(clip_views, clip_is_rrat_adjacent, expected_zipf_rank) if adj]
+    if not rrat_clips:
+        return 1.0
+    observed_ranks = sorted(range(len(clip_views)), key=lambda i: -clip_views[i])
+    rank_ratios = []
+    for views, exp_rank in rrat_clips:
+        obs_rank = next(r+1 for r, i in enumerate(observed_ranks) if clip_views[i] == views)
+        rank_ratios.append(exp_rank / obs_rank)  # > 1 means better-than-expected rank
+    return sum(rank_ratios) / len(rank_ratios)
+```
+
+**The graduation event as natural experiment:**
+
+When a talent graduates, the coupling collapse dynamics of §6.2 run at collective scale. Predictable sequence:
+
+1. $\lambda_{attach}$ spike: high learning rate under acute grief conditions
+2. $B_{\mathcal{C}}$ drops sharply (acute phase)
+3. Official communication attempts corrective framing → received as threat signal by the high-$\kappa$ sub-collective with adversarial institutional encoding
+4. $\kappa$ tightens among remaining high-parasocial members
+5. Rrat ecosystem activates to provide NES Attractor-shaped causal explanation for the graduation
+6. Re-zeroing path: fan-produced archival and continuation content acting as the broker network (§5.1), incrementally introducing post-graduation identity objects that the collective can integrate
+
+This sequence is documented in public forum archives for essentially every major graduation event since the category emerged. The simulation in §4.3 predicts it from first principles with no domain-specific tuning.
+
+**Why this example is load-bearing:**
+
+The VTuber case is not decoration. It is a small-scale, low-stakes, well-instrumented instance of mechanisms that operate at higher stakes in other domains. The math is the same. The measurement challenge is lower. If the model fits the viewership distributions and graduation dynamics, it fits the mechanism — and that fit transfers. This is the appropriate first empirical target for anyone implementing the §VII checklist before scaling to domains where confounding is severe and data is harder to gather.
 
 ---
 
