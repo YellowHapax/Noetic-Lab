@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Noetic Lab — YellowHapax</title>
+
+  <!-- marked.js -->
+  <script src="https://cdn.jsdelivr.net/npm/marked@9.1.6/marked.min.js"></script>
+  <!-- KaTeX -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+    onload="window._katexReady = true"></script>
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #0D0D1A;
+      --surface:    #12121F;
+      --surface2:   #1A1A2E;
+      --border:     #2a2a3d;
+      --gold:       #DAA520;
+      --gold-dim:   #8B6914;
+      --crimson:    #DC143C;
+      --sky:        #00BFFF;
+      --text:       #E8E8F0;
+      --text-dim:   #8888AA;
+      --text-code:  #a8d8a8;
+      --radius:     8px;
+      --titlebar-h: 36px;
+      --dock-h:     68px;
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      font-family: 'Inter', sans-serif;
+      color: var(--text);
+      user-select: none;
+    }
+
+    /* ── Desktop ───────────────────────────────────────────── */
+    #desktop {
+      position: fixed;
+      inset: 0;
+      bottom: var(--dock-h);
+      /* subtle grid wallpaper */
+      background-image:
+        linear-gradient(rgba(218,165,32,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(218,165,32,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    /* ── Window ────────────────────────────────────────────── */
+    .win {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: 0 24px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.04);
+      overflow: hidden;
+      min-width: 340px;
+      min-height: 220px;
+      transition: box-shadow 0.15s;
+      will-change: transform;
+    }
+    .win.focused {
+      box-shadow: 0 28px 90px rgba(0,0,0,0.8), 0 0 0 1px rgba(218,165,32,0.18);
+    }
+    .win.minimized { display: none; }
+
+    /* ── Titlebar ──────────────────────────────────────────── */
+    .win-titlebar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      height: var(--titlebar-h);
+      padding: 0 10px;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+      cursor: move;
+      flex-shrink: 0;
+    }
+    .win-titlebar .accent {
+      width: 3px; height: 16px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+    .win-titlebar .title {
+      flex: 1;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      color: var(--text-dim);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .win-btn {
+      width: 11px; height: 11px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: opacity 0.15s;
+    }
+    .win-btn:hover { opacity: 0.75; }
+    .win-btn.close   { background: #FF5F57; }
+    .win-btn.min     { background: #FFBD2E; }
+    .win-btn.max     { background: #28C840; }
+
+    /* ── Window body ───────────────────────────────────────── */
+    .win-body {
+      flex: 1;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Iframe app ────────────────────────────────────────── */
+    .win-iframe {
+      flex: 1;
+      width: 100%;
+      border: none;
+      background: #F9F8F4;
+    }
+
+    /* ── Markdown reader ───────────────────────────────────── */
+    .doc-shell {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+    .doc-sidebar {
+      width: 200px;
+      flex-shrink: 0;
+      background: #0f0f1c;
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      padding: 12px 0;
+    }
+    .doc-sidebar-section {
+      padding: 6px 14px 4px;
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+    .doc-file-btn {
+      display: block;
+      width: 100%;
+      text-align: left;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 7px 14px;
+      font-size: 11px;
+      color: var(--text-dim);
+      transition: color 0.12s, background 0.12s;
+    }
+    .doc-file-btn:hover  { color: var(--text); background: rgba(255,255,255,0.04); }
+    .doc-file-btn.active { color: var(--gold); background: rgba(218,165,32,0.08); }
+    .doc-content-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 32px 36px;
+      user-select: text;
+    }
+    /* Markdown typography */
+    .md-body { max-width: 680px; }
+    .md-body h1 { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 600; color: var(--text); margin-bottom: 16px; line-height: 1.25; }
+    .md-body h2 { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 600; color: var(--text); margin: 32px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+    .md-body h3 { font-size: 14px; font-weight: 600; color: var(--gold); margin: 24px 0 8px; text-transform: uppercase; letter-spacing: 0.08em; }
+    .md-body p  { font-size: 14px; line-height: 1.75; color: #BBBBD0; margin-bottom: 14px; }
+    .md-body strong { color: var(--text); font-weight: 600; }
+    .md-body em { color: #CCCCEE; font-style: italic; }
+    .md-body code { font-family: 'JetBrains Mono', monospace; font-size: 12px; background: rgba(255,255,255,0.07); padding: 1px 5px; border-radius: 3px; color: var(--text-code); }
+    .md-body pre { background: #090912; border: 1px solid var(--border); border-radius: 6px; padding: 16px; overflow-x: auto; margin: 16px 0; }
+    .md-body pre code { background: none; padding: 0; font-size: 12px; line-height: 1.6; }
+    .md-body blockquote { border-left: 3px solid var(--gold-dim); padding: 8px 16px; margin: 16px 0; background: rgba(218,165,32,0.05); border-radius: 0 4px 4px 0; }
+    .md-body blockquote p { color: #AAAABB; margin: 0; }
+    .md-body ul, .md-body ol { padding-left: 24px; margin-bottom: 14px; }
+    .md-body li { font-size: 14px; line-height: 1.7; color: #BBBBD0; margin-bottom: 4px; }
+    .md-body hr { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+    .md-body a  { color: var(--sky); text-decoration: none; }
+    .md-body a:hover { text-decoration: underline; }
+    .md-body table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13px; }
+    .md-body th { background: var(--surface2); color: var(--gold); font-weight: 600; padding: 8px 12px; text-align: left; border: 1px solid var(--border); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; }
+    .md-body td { padding: 7px 12px; border: 1px solid var(--border); color: #BBBBD0; }
+    .md-body tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+    /* KaTeX overrides */
+    .md-body .katex { color: var(--text); }
+    .md-body .katex-display { margin: 20px 0; overflow-x: auto; }
+
+    /* ── Stella canvas window ──────────────────────────────── */
+    #stella-canvas {
+      display: block;
+      flex: 1;
+      width: 100%;
+      cursor: grab;
+    }
+    #stella-canvas:active { cursor: grabbing; }
+    .stella-legend {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      padding: 8px 16px;
+      background: #0a0a14;
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-dim); }
+    .legend-dot  { width: 10px; height: 10px; border-radius: 50%; }
+
+    /* ── Dock ──────────────────────────────────────────────── */
+    #dock {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      height: var(--dock-h);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: rgba(18,18,31,0.85);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid var(--border);
+      padding: 0 20px;
+    }
+    .dock-item {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      padding: 6px 8px;
+      border-radius: 10px;
+      transition: background 0.15s, transform 0.12s;
+      user-select: none;
+    }
+    .dock-item:hover { background: rgba(255,255,255,0.06); transform: translateY(-3px); }
+    .dock-icon {
+      width: 44px; height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      font-weight: 700;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      transition: box-shadow 0.15s;
+    }
+    .dock-label {
+      font-size: 9px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+    .dock-dot {
+      position: absolute;
+      bottom: 2px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: var(--gold);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .dock-item.open .dock-dot { opacity: 1; }
+
+    /* ── Boot screen ───────────────────────────────────────── */
+    #boot {
+      position: fixed; inset: 0; z-index: 9999;
+      background: var(--bg);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 24px;
+      transition: opacity 0.6s;
+    }
+    #boot.fade-out { opacity: 0; pointer-events: none; }
+    .boot-logo {
+      width: 72px; height: 72px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #1a1a2e, #0d0d1a);
+      border: 1px solid var(--gold-dim);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Playfair Display', serif;
+      font-size: 36px;
+      color: var(--gold);
+      box-shadow: 0 0 40px rgba(218,165,32,0.15);
+    }
+    .boot-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px;
+      color: var(--text);
+      letter-spacing: 0.02em;
+    }
+    .boot-sub {
+      font-size: 12px;
+      color: var(--text-dim);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+    .boot-bar-wrap {
+      width: 200px;
+      height: 2px;
+      background: var(--border);
+      border-radius: 1px;
+      overflow: hidden;
+    }
+    .boot-bar {
+      height: 100%;
+      background: var(--gold);
+      width: 0%;
+      transition: width 1.2s ease;
+      border-radius: 1px;
+    }
+
+    /* ── Scrollbar ─────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3a3a5a; }
+  </style>
+</head>
+<body>
+
+<!-- Boot splash -->
+<div id="boot">
+  <div class="boot-logo">N</div>
+  <div class="boot-title">Noetic Lab</div>
+  <div class="boot-sub">YellowHapax · 2026</div>
+  <div class="boot-bar-wrap"><div class="boot-bar" id="boot-bar"></div></div>
+  <div class="boot-sub" style="font-size:10px; opacity:0.5">Sapere aude.</div>
+</div>
+
+<!-- Desktop surface -->
+<div id="desktop"></div>
+
+<!-- Dock -->
+<div id="dock">
+  <div class="dock-item" id="dock-readme"   onclick="WM.focus('readme')">
+    <div class="dock-icon" style="background: linear-gradient(135deg,#1a2a1a,#0d1a0d); color:#4CAF50; border:1px solid #2a3a2a;">📋</div>
+    <div class="dock-label">About</div>
+    <div class="dock-dot"></div>
+  </div>
+  <div class="dock-item open" id="dock-library" onclick="WM.focus('library')">
+    <div class="dock-icon" style="background: linear-gradient(135deg,#2a1a0d,#1a0d00); color:var(--gold); border:1px solid #3a2a10; font-size:18px;">✦</div>
+    <div class="dock-label">Library</div>
+    <div class="dock-dot"></div>
+  </div>
+  <div class="dock-item" id="dock-stella" onclick="WM.focus('stella')">
+    <div class="dock-icon" style="background: linear-gradient(135deg,#0d1a2a,#0a1020); color:var(--sky); border:1px solid #1a2a3a; font-size:18px;">◈</div>
+    <div class="dock-label">Stella</div>
+    <div class="dock-dot"></div>
+  </div>
+  <div class="dock-item" id="dock-mbd" onclick="WM.focus('mbd')">
+    <div class="dock-icon" style="background: linear-gradient(135deg,#1a1520,#0d0a18); color:#C5A059; border:1px solid #2a2030; font-family:'Playfair Display',serif;">M</div>
+    <div class="dock-label">MBD Paper</div>
+    <div class="dock-dot"></div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// Window Manager
+// ══════════════════════════════════════════════════════
+const WM = (() => {
+  const desktop = document.getElementById('desktop');
+  const windows = {};
+  let topZ = 10;
+
+  function register(id, el) {
+    windows[id] = { el, minimized: false };
+    makeDraggable(el);
+    el.addEventListener('mousedown', () => bringToFront(id));
+  }
+
+  function bringToFront(id) {
+    topZ++;
+    if (windows[id]) {
+      windows[id].el.style.zIndex = topZ;
+      document.querySelectorAll('.win').forEach(w => w.classList.remove('focused'));
+      windows[id].el.classList.add('focused');
+    }
+  }
+
+  function focus(id) {
+    if (!windows[id]) return;
+    const { el, minimized } = windows[id];
+    if (minimized || el.classList.contains('minimized')) {
+      el.classList.remove('minimized');
+      windows[id].minimized = false;
+      document.getElementById('dock-' + id)?.classList.add('open');
+    }
+    bringToFront(id);
+  }
+
+  function minimize(id) {
+    if (!windows[id]) return;
+    windows[id].el.classList.add('minimized');
+    windows[id].minimized = true;
+  }
+
+  function close(id) {
+    if (!windows[id]) return;
+    windows[id].el.classList.add('minimized');
+    document.getElementById('dock-' + id)?.classList.remove('open');
+  }
+
+  function makeDraggable(win) {
+    const titlebar = win.querySelector('.win-titlebar');
+    if (!titlebar) return;
+    let startX, startY, startLeft, startTop, dragging = false;
+
+    titlebar.addEventListener('mousedown', e => {
+      if (e.target.classList.contains('win-btn')) return;
+      dragging = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      startLeft = win.offsetLeft;
+      startTop = win.offsetTop;
+      e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', e => {
+      if (!dragging) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      const dh = document.getElementById('desktop').offsetHeight;
+      const newTop = Math.max(0, Math.min(startTop + dy, dh - 40));
+      const newLeft = Math.max(-win.offsetWidth + 60, startLeft + dx);
+      win.style.left = newLeft + 'px';
+      win.style.top  = newTop + 'px';
+    });
+
+    document.addEventListener('mouseup', () => { dragging = false; });
+  }
+
+  function create({ id, title, accentColor, x, y, w, h, body, minimized = false }) {
+    const win = document.createElement('div');
+    win.className = 'win' + (minimized ? ' minimized' : '');
+    win.id = 'win-' + id;
+    win.style.cssText = `left:${x}px;top:${y}px;width:${w}px;height:${h}px;`;
+
+    win.innerHTML = `
+      <div class="win-titlebar">
+        <div class="accent" style="background:${accentColor}"></div>
+        <span class="title">${title}</span>
+        <button class="win-btn min" onclick="WM.minimize('${id}')"></button>
+        <button class="win-btn close" onclick="WM.close('${id}')"></button>
+      </div>
+      <div class="win-body">${body}</div>
+    `;
+
+    desktop.appendChild(win);
+    register(id, win);
+    if (!minimized) document.getElementById('dock-' + id)?.classList.add('open');
+    return win;
+  }
+
+  return { register, focus, minimize, close, create, bringToFront };
+})();
+
+
+// ══════════════════════════════════════════════════════
+// Document files registry
+// ══════════════════════════════════════════════════════
+const DOC_FILES = [
+  { section: 'Theory',    label: 'Golden Rule as Stochastic Prior', path: 'theory/GOLDEN_RULE_AS_STOCHASTIC_PRIOR.md' },
+  { section: 'Dialogues', label: 'Kant · Proxy-Noumenon (2026-02-28)', path: 'dialogues/2026-02-28_kant_proxy_noumenon.md' },
+  { section: 'About',     label: 'README', path: 'README.md' },
+];
+
+async function renderMarkdown(path, contentEl) {
+  contentEl.innerHTML = '<p style="color:var(--text-dim);font-size:13px;">Loading…</p>';
+  try {
+    const res = await fetch(path);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const text = await res.text();
+    const html = marked.parse(text);
+    contentEl.innerHTML = '<div class="md-body">' + html + '</div>';
+    // KaTeX render
+    const tryKatex = () => {
+      if (window._katexReady && window.renderMathInElement) {
+        renderMathInElement(contentEl, {
+          delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '$',  right: '$',  display: false },
+          ],
+          throwOnError: false,
+        });
+      } else {
+        setTimeout(tryKatex, 100);
+      }
+    };
+    tryKatex();
+  } catch (e) {
+    contentEl.innerHTML = `<p style="color:#FF6060;font-size:13px;">Could not load <code>${path}</code>: ${e.message}</p>`;
+  }
+}
+
+function buildLibraryWindow() {
+  // Build sidebar HTML
+  let sidebar = '';
+  let lastSection = '';
+  DOC_FILES.forEach((f, i) => {
+    if (f.section !== lastSection) {
+      sidebar += `<div class="doc-sidebar-section">${f.section}</div>`;
+      lastSection = f.section;
+    }
+    sidebar += `<button class="doc-file-btn${i === 0 ? ' active' : ''}" data-idx="${i}" onclick="selectDoc(${i})">${f.label}</button>`;
+  });
+
+  const body = `
+    <div class="doc-shell">
+      <div class="doc-sidebar" id="doc-sidebar">${sidebar}</div>
+      <div class="doc-content-area" id="doc-content"></div>
+    </div>`;
+
+  WM.create({
+    id: 'library', title: 'Noetic Library', accentColor: 'var(--gold)',
+    x: 60, y: 40, w: 860, h: 560, body
+  });
+
+  // Load first doc
+  renderMarkdown(DOC_FILES[0].path, document.getElementById('doc-content'));
+}
+
+window.selectDoc = function(idx) {
+  document.querySelectorAll('.doc-file-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.doc-file-btn[data-idx="${idx}"]`)?.classList.add('active');
+  renderMarkdown(DOC_FILES[idx].path, document.getElementById('doc-content'));
+};
+
+
+// ══════════════════════════════════════════════════════
+// README / About window
+// ══════════════════════════════════════════════════════
+function buildReadmeWindow() {
+  const body = `<div class="doc-content-area" id="readme-content" style="padding:28px 32px;user-select:text;"></div>`;
+  WM.create({
+    id: 'readme', title: 'README — Noetic Lab', accentColor: '#4CAF50',
+    x: 960, y: 40, w: 420, h: 340, body, minimized: true
+  });
+  renderMarkdown('README.md', document.getElementById('readme-content'));
+}
+
+
+// ══════════════════════════════════════════════════════
+// MBD Presentation window
+// ══════════════════════════════════════════════════════
+function buildMBDWindow() {
+  const body = `<iframe class="win-iframe" src="apps/mbd-presentation/index.html" id="mbd-iframe" loading="lazy" title="Memory as Baseline Deviation — Interactive Presentation"></iframe>`;
+  WM.create({
+    id: 'mbd', title: 'Memory as Baseline Deviation — Presentation', accentColor: '#C5A059',
+    x: 100, y: 80, w: 1100, h: 640, body, minimized: true
+  });
+}
+
+
+// ══════════════════════════════════════════════════════
+// Stella Octangula — JS Canvas Renderer
+// ══════════════════════════════════════════════════════
+function buildStellaWindow() {
+  const body = `
+    <canvas id="stella-canvas"></canvas>
+    <div class="stella-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#DAA520"></div>Haven tetrahedron</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#DC143C"></div>Sink tetrahedron</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#555"></div>Cube · dual diagonals</div>
+      <div class="legend-item" style="margin-left:12px;font-size:10px;color:#666">Drag to rotate</div>
+    </div>`;
+
+  WM.create({
+    id: 'stella', title: 'Stella Octangula — Influence Cube', accentColor: 'var(--sky)',
+    x: 950, y: 60, w: 480, h: 420, body, minimized: true
+  });
+
+  initStella();
+}
+
+function initStella() {
+  const canvas = document.getElementById('stella-canvas');
+  if (!canvas) return;
+
+  // Vertices: [name, x, y, z, isHaven, symbol]
+  // Axes: X=Locus(0=Internal,1=External), Y=Coupling(0=Low,1=High), Z=Temporality(0=Static,1=Dynamic)
+  const VERTS = [
+    // Haven (even parity)
+    { name: 'Nature',     x:0, y:0, z:0, haven: true,  sym: '🌱' },
+    { name: 'Nurture',    x:1, y:1, z:0, haven: true,  sym: '🤝' },
+    { name: 'Heaven',     x:0, y:1, z:1, haven: true,  sym: '✦' },
+    { name: 'Home',       x:1, y:0, z:1, haven: true,  sym: '⌂' },
+    // Sink (odd parity)
+    { name: 'Displacement', x:1, y:0, z:0, haven: false, sym: '↗' },
+    { name: 'Fixation',     x:0, y:1, z:0, haven: false, sym: '🔒' },
+    { name: 'Degeneration', x:0, y:0, z:1, haven: false, sym: '↘' },
+    { name: 'Capture',      x:1, y:1, z:1, haven: false, sym: '⛓' },
+  ];
+
+  // Cube edges (pairs of vertex indices 0-7 by cube corner order)
+  const CUBE_CORNERS = [
+    [0,0,0],[1,0,0],[0,1,0],[1,1,0],
+    [0,0,1],[1,0,1],[0,1,1],[1,1,1],
+  ];
+  const CUBE_EDGES = [];
+  for (let i = 0; i < 8; i++) {
+    for (let j = i+1; j < 8; j++) {
+      const d = Math.abs(CUBE_CORNERS[i][0]-CUBE_CORNERS[j][0]) +
+                Math.abs(CUBE_CORNERS[i][1]-CUBE_CORNERS[j][1]) +
+                Math.abs(CUBE_CORNERS[i][2]-CUBE_CORNERS[j][2]);
+      if (d === 1) CUBE_EDGES.push([CUBE_CORNERS[i], CUBE_CORNERS[j]]);
+    }
+  }
+
+  // Tetrahedron faces (groups of 3 from 4 vertices)
+  function tetFaces(verts) {
+    const faces = [];
+    for (let i = 0; i < 4; i++)
+      for (let j = i+1; j < 4; j++)
+        for (let k = j+1; k < 4; k++)
+          faces.push([verts[i], verts[j], verts[k]]);
+    return faces;
+  }
+
+  const havenVerts = VERTS.filter(v => v.haven);
+  const sinkVerts  = VERTS.filter(v => !v.haven);
+
+  // Rotation state
+  let rotX = 0.35, rotY = -0.6;
+  let dragging = false, lastMx = 0, lastMy = 0;
+
+  canvas.addEventListener('mousedown', e => {
+    dragging = true; lastMx = e.clientX; lastMy = e.clientY;
+  });
+  document.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    rotY += (e.clientX - lastMx) * 0.008;
+    rotX += (e.clientY - lastMy) * 0.008;
+    lastMx = e.clientX; lastMy = e.clientY;
+  });
+  document.addEventListener('mouseup', () => { dragging = false; });
+
+  function rotate(v) {
+    // Center the cube at origin
+    let x = v.x - 0.5, y = v.y - 0.5, z = v.z - 0.5;
+    // Rotate Y
+    let x1 = x * Math.cos(rotY) + z * Math.sin(rotY);
+    let z1 = -x * Math.sin(rotY) + z * Math.cos(rotY);
+    // Rotate X
+    let y2 = y * Math.cos(rotX) - z1 * Math.sin(rotX);
+    let z2 = y * Math.sin(rotX) + z1 * Math.cos(rotX);
+    return { x: x1, y: y2, z: z2 };
+  }
+
+  function project(rv, W, H) {
+    const fov = 2.8;
+    const scale = fov / (fov + rv.z + 0.5);
+    return {
+      px: W/2 + rv.x * scale * Math.min(W, H) * 0.5,
+      py: H/2 - rv.y * scale * Math.min(W, H) * 0.5,
+      scale,
+    };
+  }
+
+  function drawLine(ctx, a, b, color, alpha, width) {
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.beginPath();
+    ctx.moveTo(a.px, a.py);
+    ctx.lineTo(b.px, b.py);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawFace(ctx, pts, color, alpha) {
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(pts[0].px, pts[0].py);
+    pts.slice(1).forEach(p => ctx.lineTo(p.px, p.py));
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+
+  let animId;
+  function draw() {
+    const W = canvas.offsetWidth;
+    const H = canvas.offsetHeight;
+    if (W === 0 || H === 0) { animId = requestAnimationFrame(draw); return; }
+    canvas.width  = W * devicePixelRatio;
+    canvas.height = H * devicePixelRatio;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(devicePixelRatio, devicePixelRatio);
+
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#0D0D1A';
+    ctx.fillRect(0, 0, W, H);
+
+    // Project all 8 raw corners for cube wireframe
+    const projCorners = CUBE_CORNERS.map(([cx,cy,cz]) => {
+      const rv = rotate({ x:cx, y:cy, z:cz });
+      return project(rv, W, H);
+    });
+
+    // Cube wireframe
+    CUBE_EDGES.forEach(([a, b]) => {
+      const ia = CUBE_CORNERS.findIndex(c => c[0]===a[0] && c[1]===a[1] && c[2]===a[2]);
+      const ib = CUBE_CORNERS.findIndex(c => c[0]===b[0] && c[1]===b[1] && c[2]===b[2]);
+      drawLine(ctx, projCorners[ia], projCorners[ib], '#3a3a5a', 0.5, 0.8);
+    });
+
+    // Project the 8 named vertices
+    const projVerts = VERTS.map(v => {
+      const rv = rotate(v);
+      return { ...project(rv, W, H), ...v };
+    });
+    const projHaven = projVerts.filter(v => v.haven);
+    const projSink  = projVerts.filter(v => !v.haven);
+
+    // Dual diagonals (each haven ↔ its bitwise complement in sink)
+    projHaven.forEach(hv => {
+      const dual = projSink.find(sv =>
+        sv.x === 1-hv.x && sv.y === 1-hv.y && sv.z === 1-hv.z);
+      if (dual) drawLine(ctx, hv, dual, '#555', 0.4, 0.8);
+    });
+
+    // Haven tetrahedron faces
+    tetFaces(projHaven).forEach(face => {
+      drawFace(ctx, face, '#DAA520', 0.07);
+      for (let i = 0; i < face.length; i++) {
+        const a = face[i], b = face[(i+1) % face.length];
+        drawLine(ctx, a, b, '#DAA520', 0.55, 1.2);
+      }
+    });
+
+    // Sink tetrahedron faces
+    tetFaces(projSink).forEach(face => {
+      drawFace(ctx, face, '#DC143C', 0.07);
+      for (let i = 0; i < face.length; i++) {
+        const a = face[i], b = face[(i+1) % face.length];
+        drawLine(ctx, a, b, '#DC143C', 0.55, 1.2);
+      }
+    });
+
+    // Vertices + labels
+    projVerts.forEach(v => {
+      const color = v.haven ? '#DAA520' : '#DC143C';
+      // Dot
+      ctx.save();
+      ctx.globalAlpha = 0.9;
+      ctx.fillStyle = color;
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 8;
+      ctx.beginPath();
+      ctx.arc(v.px, v.py, 4 * v.scale + 1.5, 0, Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+      // Label
+      ctx.save();
+      ctx.globalAlpha = 0.85;
+      ctx.fillStyle = color;
+      ctx.font = `${Math.round(9 * v.scale + 3)}px Inter, sans-serif`;
+      ctx.fillText(v.name, v.px + 7, v.py - 5);
+      ctx.restore();
+    });
+
+    // Equation at bottom
+    ctx.save();
+    ctx.globalAlpha = 0.3;
+    ctx.fillStyle = '#888899';
+    ctx.font = '10px JetBrains Mono, monospace';
+    ctx.fillText('B(t+1) = B(t)(1−Σλ) + Σ[I·λ] + ε', 12, H - 10);
+    ctx.restore();
+
+    animId = requestAnimationFrame(draw);
+  }
+
+  // Auto-rotate when idle
+  let idleTimer;
+  function resetIdle() {
+    clearInterval(idleTimer);
+    idleTimer = setInterval(() => {
+      if (!dragging) { rotY += 0.003; }
+    }, 16);
+  }
+  resetIdle();
+  canvas.addEventListener('mousedown', resetIdle);
+
+  draw();
+}
+
+
+// ══════════════════════════════════════════════════════
+// Boot sequence
+// ══════════════════════════════════════════════════════
+window.addEventListener('load', () => {
+  const bar = document.getElementById('boot-bar');
+  const bootEl = document.getElementById('boot');
+
+  // Start loading bar
+  setTimeout(() => { bar.style.width = '60%'; }, 100);
+
+  // Build windows
+  buildLibraryWindow();
+  buildReadmeWindow();
+  buildMBDWindow();
+  buildStellaWindow();
+
+  setTimeout(() => { bar.style.width = '100%'; }, 800);
+  setTimeout(() => {
+    bootEl.classList.add('fade-out');
+    setTimeout(() => { bootEl.style.display = 'none'; }, 700);
+    // Focus library on boot
+    WM.focus('library');
+  }, 1600);
+});
+</script>
+</body>
+</html>
