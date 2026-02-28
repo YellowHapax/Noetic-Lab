@@ -441,6 +441,10 @@
       <div class="dsk-icon-img" style="background:linear-gradient(135deg,#1a1520,#0d0a18);color:#C5A059;border:1px solid #2a2030;font-family:'Playfair Display',serif;">M</div>
       <div class="dsk-icon-label">MBD Paper</div>
     </div>
+    <div class="dsk-icon" id="dsk-bet" ondblclick="WM.focus('bet')" onclick="selectDskIcon('dsk-bet')">
+      <div class="dsk-icon-img" style="background:linear-gradient(135deg,#0d1a12,#08110d);color:#4eca88;border:1px solid #1a3a24;font-family:'JetBrains Mono',monospace;font-size:14px;">β</div>
+      <div class="dsk-icon-label">Bet Sim</div>
+    </div>
   </div>
 </div>
 
@@ -467,6 +471,11 @@
   <div class="dock-item" id="dock-mbd" onclick="WM.focus('mbd')">
     <div class="dock-icon" style="background: linear-gradient(135deg,#1a1520,#0d0a18); color:#C5A059; border:1px solid #2a2030; font-family:'Playfair Display',serif;">M</div>
     <div class="dock-label">MBD Paper</div>
+    <div class="dock-dot"></div>
+  </div>
+  <div class="dock-item" id="dock-bet" onclick="WM.focus('bet')">
+    <div class="dock-icon" style="background: linear-gradient(135deg,#0d1a12,#08110d); color:#4eca88; border:1px solid #1a3a24; font-family:'JetBrains Mono',monospace; font-size:16px;">β</div>
+    <div class="dock-label">Bet Sim</div>
     <div class="dock-dot"></div>
   </div>
 </div>
@@ -666,6 +675,18 @@ function buildMBDWindow() {
   WM.create({
     id: 'mbd', title: 'Memory as Baseline Deviation — Presentation', accentColor: '#C5A059',
     x: 100, y: 40, w: 1100, h: 660, body
+  });
+}
+
+
+// ══════════════════════════════════════════════════════
+// Bet — Collective Baseline Simulator
+// ══════════════════════════════════════════════════════
+function buildBetWindow() {
+  const body = `<iframe class="win-iframe" src="apps/bet-simulation/index.html" id="bet-iframe" loading="lazy" title="Bet — Collective Baseline Dynamics Simulator"></iframe>`;
+  WM.create({
+    id: 'bet', title: 'Bet · Collective Baseline Dynamics Simulator', accentColor: '#4eca88',
+    x: 140, y: 60, w: 980, h: 600, body, minimized: true
   });
 }
 
@@ -1024,6 +1045,7 @@ window.addEventListener('load', () => {
   buildReadmeWindow();
   buildMBDWindow();
   buildStellaWindow();
+  buildBetWindow();
 
   setTimeout(() => { bar.style.width = '100%'; }, 800);
   setTimeout(() => {

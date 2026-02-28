@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bet · Collective Baseline Simulator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0D0D1A;
+      --surface:   #12121F;
+      --surface2:  #1A1A2E;
+      --border:    #2a2a3d;
+      --gold:      #DAA520;
+      --gold-dim:  #8B6914;
+      --crimson:   #e04060;
+      --green:     #4eca88;
+      --gray:      #666688;
+      --sky:       #00BFFF;
+      --text:      #E8E8F0;
+      --text-dim:  #8888AA;
+      --mono:      'JetBrains Mono', monospace;
+      --radius:    6px;
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+    }
+
+    #app {
+      display: flex;
+      flex-direction: column;
+      width: 100%; height: 100%;
+    }
+
+    /* ── Header ──────────────────────────────────────────── */
+    #header {
+      flex: 0 0 auto;
+      padding: 12px 20px 10px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+    }
+    #header-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--gold);
+      font-family: var(--mono);
+      letter-spacing: 0.03em;
+    }
+    #header-sub {
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+    #header-src {
+      margin-left: auto;
+      font-size: 10px;
+      color: var(--text-dim);
+      opacity: 0.55;
+      font-style: italic;
+    }
+
+    /* ── Main layout ─────────────────────────────────────── */
+    #main {
+      flex: 1 1 0;
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* ── Sidebar ─────────────────────────────────────────── */
+    #sidebar {
+      flex: 0 0 220px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      padding: 16px 14px;
+      border-right: 1px solid var(--border);
+      background: var(--surface);
+      overflow-y: auto;
+    }
+
+    .param-section {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+      opacity: 0.7;
+    }
+
+    .param-group {
+      margin-bottom: 14px;
+    }
+    .param-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+    .param-label span:first-child {
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+    .param-val {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--gold);
+      min-width: 32px;
+      text-align: right;
+    }
+
+    input[type=range] {
+      width: 100%;
+      appearance: none;
+      height: 3px;
+      background: var(--border);
+      border-radius: 2px;
+      outline: none;
+      cursor: pointer;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      appearance: none;
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      background: var(--gold-dim);
+      border: 1px solid var(--gold);
+      transition: background 0.1s;
+    }
+    input[type=range]::-webkit-slider-thumb:hover { background: var(--gold); }
+
+    #run-btn {
+      width: 100%;
+      padding: 9px 0;
+      background: linear-gradient(135deg, #1a1200, #0d0a00);
+      border: 1px solid var(--gold-dim);
+      border-radius: var(--radius);
+      color: var(--gold);
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      letter-spacing: 0.05em;
+      transition: background 0.15s, border-color 0.15s;
+      margin-top: 2px;
+      margin-bottom: 16px;
+    }
+    #run-btn:hover {
+      background: linear-gradient(135deg, #2a1e00, #1a1600);
+      border-color: var(--gold);
+    }
+    #run-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .sim-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 4px 0 14px;
+      opacity: 0.5;
+    }
+
+    /* ── Observations ────────────────────────────────────── */
+    #observations {
+      transition: opacity 0.4s;
+    }
+    #observations.hidden { opacity: 0; pointer-events: none; }
+
+    .obs-section-label {
+      font-size: 9px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      opacity: 0.7;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .obs-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      gap: 6px;
+    }
+    .obs-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--text-dim);
+      flex-shrink: 0;
+    }
+    .obs-delta {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      text-align: right;
+    }
+    .obs-delta.bad  { color: var(--crimson); }
+    .obs-delta.good { color: var(--green); }
+    .obs-delta.flat { color: var(--gray); }
+
+    .obs-finding {
+      margin-top: 10px;
+      padding: 8px 10px;
+      background: rgba(218,165,32, 0.05);
+      border-left: 2px solid var(--gold-dim);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      font-size: 10.5px;
+      line-height: 1.55;
+      color: var(--text);
+      opacity: 0.85;
+    }
+
+    /* ── Chart area ──────────────────────────────────────── */
+    #chart-area {
+      flex: 1 1 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      padding: 0;
+    }
+
+    #chart-wrap {
+      flex: 1 1 0;
+      position: relative;
+    }
+
+    #chart {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* ── Legend ──────────────────────────────────────────── */
+    #legend {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 7px 24px 7px 60px;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .leg-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10.5px;
+      color: var(--text-dim);
+    }
+    .leg-swatch {
+      width: 20px; height: 2px;
+      border-radius: 1px;
+    }
+    .leg-shade {
+      width: 12px; height: 12px;
+      background: rgba(0,191,255, 0.08);
+      border: 1px solid rgba(0,191,255, 0.2);
+      border-radius: 2px;
+    }
+
+    /* ── Scrollbar ───────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <div id="header">
+    <span id="header-title">Bet · Collective Baseline Dynamics</span>
+    <span id="header-sub">Three-mode comparison: control · fact_flood · re-zeroing</span>
+    <span id="header-src">MBD Framework §4 — Noetic Lab 2026</span>
+  </div>
+
+  <div id="main">
+
+    <div id="sidebar">
+      <div class="param-section">Parameters</div>
+
+      <div class="param-group">
+        <div class="param-label">
+          <span>α — novelty sensitivity</span>
+          <span class="param-val" id="alpha-val">3.0</span>
+        </div>
+        <input type="range" id="alpha" min="0.5" max="8" step="0.1" value="3.0">
+      </div>
+
+      <div class="param-group">
+        <div class="param-label">
+          <span>κ₀ — initial coupling</span>
+          <span class="param-val" id="kappa0-val">0.45</span>
+        </div>
+        <input type="range" id="kappa0" min="0.05" max="0.95" step="0.05" value="0.45">
+      </div>
+
+      <div class="param-group">
+        <div class="param-label">
+          <span>Flood signals / step</span>
+          <span class="param-val" id="floodn-val">5</span>
+        </div>
+        <input type="range" id="floodn" min="1" max="12" step="1" value="5">
+      </div>
+
+      <div class="param-group">
+        <div class="param-label">
+          <span>Flood target I</span>
+          <span class="param-val" id="floodi-val">0.85</span>
+        </div>
+        <input type="range" id="floodi" min="0.50" max="1.0" step="0.05" value="0.85">
+      </div>
+
+      <button id="run-btn">▶ Run Simulation</button>
+
+      <div class="sim-divider"></div>
+
+      <div id="observations" class="hidden">
+        <div class="obs-section-label">Results at t = 200</div>
+
+        <div class="obs-row">
+          <span class="obs-label">B(flood)</span>
+          <span class="obs-delta" id="obs-B-flood">—</span>
+        </div>
+        <div class="obs-row">
+          <span class="obs-label">B(rezero)</span>
+          <span class="obs-delta" id="obs-B-rezero">—</span>
+        </div>
+        <div class="obs-row" style="margin-top:8px;">
+          <span class="obs-label">κ(flood)</span>
+          <span class="obs-delta" id="obs-K-flood">—</span>
+        </div>
+        <div class="obs-row">
+          <span class="obs-label">κ(rezero)</span>
+          <span class="obs-delta" id="obs-K-rezero">—</span>
+        </div>
+        <div class="obs-row" style="margin-top:8px;">
+          <span class="obs-label">H(flood)</span>
+          <span class="obs-delta" id="obs-H-flood">—</span>
+        </div>
+        <div class="obs-row">
+          <span class="obs-label">H(rezero)</span>
+          <span class="obs-delta" id="obs-H-rezero">—</span>
+        </div>
+
+        <div class="obs-finding" id="obs-finding"></div>
+      </div>
+    </div><!-- #sidebar -->
+
+    <div id="chart-area">
+      <div id="chart-wrap">
+        <canvas id="chart"></canvas>
+      </div>
+
+      <div id="legend">
+        <div class="leg-item">
+          <div class="leg-swatch" style="background:var(--gray);"></div>
+          <span>control</span>
+        </div>
+        <div class="leg-item">
+          <div class="leg-swatch" style="background:var(--crimson);"></div>
+          <span>fact flood</span>
+        </div>
+        <div class="leg-item">
+          <div class="leg-swatch" style="background:var(--green);"></div>
+          <span>re-zeroing</span>
+        </div>
+        <div class="leg-item" style="margin-left:8px;">
+          <div class="leg-shade"></div>
+          <span>intervention window (t = 50 – 150)</span>
+        </div>
+      </div>
+    </div><!-- #chart-area -->
+
+  </div><!-- #main -->
+</div><!-- #app -->
+
+<script>
+'use strict';
+
+// ══════════════════════════════════════════════════════════════════
+// Simulation
+// ══════════════════════════════════════════════════════════════════
+
+function phi(I, B, H, alpha) {
+  const novelty = Math.abs(I - B);
+  if (novelty < H) return Math.exp(-alpha * (novelty / H));
+  return 0.0;
+}
+
+function threatSignal(I, B, H) {
+  const novelty = Math.abs(I - B);
+  if (novelty >= H) {
+    return [
+      -0.02 * (novelty - H),   // baseline_reinforcement: pulls B away from I
+       0.03 * (novelty - H)    // kappa_tightening: increases coupling
+    ];
+  }
+  return [0.0, 0.0];
+}
+
+function simulate(mode, cfg) {
+  const {
+    alpha, kappa0, floodN, floodTarget,
+    steps = 200, floodStart = 50, floodEnd = 150
+  } = cfg;
+
+  let B = 0.15, kappa = kappa0, Hw = 0.30, lam = 0.08;
+  const hist = { B: [], kappa: [], H: [] };
+
+  // Park-Miller LCG for seeded reproducible noise
+  let seed = 0xDEADBEEF;
+  const rand = () => {
+    seed = (seed * 1664525 + 1013904223) >>> 0;
+    return (seed / 0xFFFFFFFF) - 0.5;
+  };
+
+  for (let t = 0; t < steps; t++) {
+    hist.B.push(B);
+    hist.kappa.push(kappa);
+    hist.H.push(Hw);
+
+    if (mode === 'fact_flood' && t >= floodStart && t < floodEnd) {
+      for (let n = 0; n < floodN; n++) {
+        const I = floodTarget;
+        const p = phi(I, B, Hw, alpha);
+        const [bD, kD] = threatSignal(I, B, Hw);
+        if (p > 0.25) {
+          B = B * (1 - lam) + I * lam * p;
+        } else {
+          B  = Math.max(0, B + bD);
+          kappa = Math.min(1.0, kappa + kD);
+          Hw = Math.max(0.05, Hw - 0.002);
+        }
+      }
+    } else if (mode === 'rezero' && t >= floodStart && t < floodEnd) {
+      const I = B + 0.04;
+      const p = phi(I, B, Hw, alpha);
+      B  = B * (1 - lam * 1.5) + I * lam * 1.5 * p;
+      Hw = Math.min(1.0, Hw + 0.005);
+      kappa = Math.max(0.0, kappa - 0.005);
+    } else {
+      // Control: slow Brownian drift
+      B += rand() * 0.01;
+      B = Math.max(0, Math.min(1, B));
+    }
+
+    B     = Math.max(0, Math.min(1, B));
+    kappa = Math.max(0, Math.min(1, kappa));
+    Hw    = Math.max(0.05, Math.min(1.0, Hw));
+  }
+
+  return hist;
+}
+
+
+// ══════════════════════════════════════════════════════════════════
+// Chart renderer
+// ══════════════════════════════════════════════════════════════════
+
+const PANEL_DEFS = [
+  { key: 'B',     label: 'B\u2C7C(t)',    sub: 'Collective Baseline',  yLabel: '0 = endemic →  1 = healthy' },
+  { key: 'kappa', label: '\u03BA(t)',      sub: 'Coupling Strength',    yLabel: '0 = loose →  1 = synchronized' },
+  { key: 'H',     label: 'H(t)',           sub: 'Horizon Width',        yLabel: '0 = occluded →  1 = open' },
+];
+
+const COLORS = {
+  ctrl:   '#6666aa',
+  flood:  '#e04060',
+  rezero: '#4eca88',
+  shade:  'rgba(0,191,255,0.06)',
+  shade_border: 'rgba(0,191,255,0.18)',
+  grid:   'rgba(255,255,255,0.04)',
+  axis:   'rgba(255,255,255,0.12)',
+  text:   '#8888aa',
+  gold:   '#DAA520',
+};
+
+let animFrame = null;
+let simData   = null;  // { ctrl, flood, rezero }
+let tMax      = 0;     // how many steps to draw (animated)
+
+function drawChart(canvas, data, tDraw) {
+  if (!data) return;
+
+  const dpr = window.devicePixelRatio || 1;
+  const W   = canvas.offsetWidth;
+  const H   = canvas.offsetHeight;
+  canvas.width  = W * dpr;
+  canvas.height = H * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = '#0D0D1A';
+  ctx.fillRect(0, 0, W, H);
+
+  const STEPS      = data.ctrl.B.length;
+  const FLOOD_S    = 50;
+  const FLOOD_E    = 150;
+  const N_PANELS   = PANEL_DEFS.length;
+
+  // Chart geometry
+  const LEFT_PAD   = 52;   // Y axis labels
+  const RIGHT_PAD  = 12;
+  const TOP_PAD    = 14;
+  const BOT_PAD    = 24;   // X axis row
+  const GAP        = 8;    // between panels
+
+  const panelH = (H - TOP_PAD - BOT_PAD - GAP * (N_PANELS - 1)) / N_PANELS;
+  const chartW  = W - LEFT_PAD - RIGHT_PAD;
+
+  function tToX(t) { return LEFT_PAD + (t / (STEPS - 1)) * chartW; }
+  function vToY(v, py, ph) { return py + ph - v * ph; }  // v in [0,1]
+
+  for (let pi = 0; pi < N_PANELS; pi++) {
+    const def  = PANEL_DEFS[pi];
+    const py   = TOP_PAD + pi * (panelH + GAP);   // top of panel
+    const ph   = panelH;                           // height of panel
+
+    // ── Background ──
+    ctx.fillStyle = 'rgba(255,255,255,0.015)';
+    ctx.fillRect(LEFT_PAD, py, chartW, ph);
+
+    // ── Intervention shade ──
+    const sx = tToX(FLOOD_S);
+    const ex = tToX(Math.min(FLOOD_E, tDraw));
+    if (tDraw > FLOOD_S) {
+      ctx.fillStyle = COLORS.shade;
+      ctx.fillRect(sx, py, ex - sx, ph);
+      // border lines
+      ctx.strokeStyle = COLORS.shade_border;
+      ctx.lineWidth = 0.8;
+      if (tDraw > FLOOD_S) {
+        ctx.beginPath(); ctx.moveTo(sx, py); ctx.lineTo(sx, py + ph); ctx.stroke();
+      }
+      if (tDraw >= FLOOD_E) {
+        ctx.beginPath(); ctx.moveTo(ex, py); ctx.lineTo(ex, py + ph); ctx.stroke();
+      }
+    }
+
+    // ── Horizontal grid lines (Y = 0.25, 0.5, 0.75) ──
+    ctx.strokeStyle = COLORS.grid;
+    ctx.lineWidth = 0.8;
+    [0.25, 0.5, 0.75].forEach(v => {
+      const gy = vToY(v, py, ph);
+      ctx.beginPath(); ctx.moveTo(LEFT_PAD, gy); ctx.lineTo(LEFT_PAD + chartW, gy); ctx.stroke();
+    });
+
+    // ── Vertical grid lines (t = 50, 100, 150) ──
+    [50, 100, 150].forEach(t => {
+      const gx = tToX(t);
+      ctx.beginPath(); ctx.moveTo(gx, py); ctx.lineTo(gx, py + ph); ctx.stroke();
+    });
+
+    // ── Panel outline ──
+    ctx.strokeStyle = COLORS.axis;
+    ctx.lineWidth = 0.8;
+    ctx.strokeRect(LEFT_PAD, py, chartW, ph);
+
+    // ── Y axis label ──
+    ctx.save();
+    ctx.translate(11, py + ph / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillStyle = COLORS.gold;
+    ctx.font = 'bold 11px JetBrains Mono, monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(def.label, 0, 0);
+    ctx.restore();
+
+    // ── Panel sub-title ──
+    ctx.fillStyle = COLORS.text;
+    ctx.font = '9.5px Inter, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(def.sub, LEFT_PAD + 6, py + 11);
+
+    // ── Y tick labels ──
+    ctx.fillStyle = COLORS.text;
+    ctx.font = '9px JetBrains Mono, monospace';
+    ctx.textAlign = 'right';
+    [0, 0.5, 1.0].forEach(v => {
+      const gy = vToY(v, py, ph);
+      ctx.fillText(v.toFixed(1), LEFT_PAD - 5, gy + 3);
+    });
+
+    // ── Draw data lines ──
+    const series = [
+      { key: 'ctrl',   color: COLORS.ctrl,   lw: 1.2, data: data.ctrl[def.key]   },
+      { key: 'flood',  color: COLORS.flood,  lw: 1.6, data: data.flood[def.key]  },
+      { key: 'rezero', color: COLORS.rezero, lw: 1.6, data: data.rezero[def.key] },
+    ];
+
+    series.forEach(s => {
+      const pts = s.data;
+      const n = Math.min(tDraw, pts.length);
+      if (n < 2) return;
+
+      ctx.beginPath();
+      ctx.strokeStyle = s.color;
+      ctx.lineWidth = s.lw;
+      ctx.lineJoin = 'round';
+      ctx.lineCap  = 'round';
+
+      ctx.moveTo(tToX(0), vToY(pts[0], py, ph));
+      for (let t = 1; t < n; t++) {
+        ctx.lineTo(tToX(t), vToY(pts[t], py, ph));
+      }
+      ctx.stroke();
+    });
+
+    // ── End-point dots (when complete) ──
+    if (tDraw >= STEPS) {
+      series.forEach(s => {
+        const last = s.data[STEPS - 1];
+        const ex   = tToX(STEPS - 1);
+        const ey   = vToY(last, py, ph);
+        ctx.beginPath();
+        ctx.arc(ex, ey, 3, 0, Math.PI * 2);
+        ctx.fillStyle = s.color;
+        ctx.fill();
+      });
+    }
+  }
+
+  // ── X axis tick labels (bottom) ──
+  ctx.fillStyle = COLORS.text;
+  ctx.font = '9px JetBrains Mono, monospace';
+  ctx.textAlign = 'center';
+  const xAxisY = TOP_PAD + N_PANELS * panelH + (N_PANELS - 1) * GAP + 14;
+  [0, 50, 100, 150, 199].forEach(t => {
+    ctx.fillText(t.toString(), tToX(t), xAxisY);
+  });
+  ctx.fillStyle = COLORS.text;
+  ctx.font = '9px Inter, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('t (steps)', LEFT_PAD + chartW / 2, xAxisY + 11);
+}
+
+
+// ══════════════════════════════════════════════════════════════════
+// Animation
+// ══════════════════════════════════════════════════════════════════
+
+function startAnim(canvas, data) {
+  if (animFrame) cancelAnimationFrame(animFrame);
+  const STEPS = data.ctrl.B.length;
+  const DURATION_MS = 1800;
+  const start = performance.now();
+
+  function frame(now) {
+    const elapsed = now - start;
+    const t = Math.min(STEPS, Math.round((elapsed / DURATION_MS) * STEPS));
+    drawChart(canvas, data, t);
+    if (t < STEPS) {
+      animFrame = requestAnimationFrame(frame);
+    } else {
+      animFrame = null;
+      showObservations(data);
+    }
+  }
+  animFrame = requestAnimationFrame(frame);
+}
+
+
+// ══════════════════════════════════════════════════════════════════
+// Observations
+// ══════════════════════════════════════════════════════════════════
+
+function setObs(id, v, baseline, higherIsBetter) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const delta = v - baseline;
+  const sign  = delta >= 0 ? '+' : '';
+  const cls   = delta === 0 ? 'flat'
+              : (higherIsBetter ? (delta > 0 ? 'good' : 'bad')
+                                : (delta < 0 ? 'good' : 'bad'));
+  el.textContent = `${v.toFixed(3)} (${sign}${delta.toFixed(3)})`;
+  el.className   = `obs-delta ${cls}`;
+}
+
+function showObservations(data) {
+  const STEPS = data.ctrl.B.length;
+  const idx   = STEPS - 1;
+
+  const ctrlB = data.ctrl.B[idx];
+  const ctrlK = data.ctrl.kappa[idx];
+  const ctrlH = data.ctrl.H[idx];
+
+  const floodB = data.flood.B[idx];
+  const floodK = data.flood.kappa[idx];
+  const floodH = data.flood.H[idx];
+
+  const rezB = data.rezero.B[idx];
+  const rezK = data.rezero.kappa[idx];
+  const rezH = data.rezero.H[idx];
+
+  setObs('obs-B-flood',  floodB, ctrlB, true);
+  setObs('obs-B-rezero', rezB,   ctrlB, true);
+  setObs('obs-K-flood',  floodK, ctrlK, false);
+  setObs('obs-K-rezero', rezK,   ctrlK, false);
+  setObs('obs-H-flood',  floodH, ctrlH, true);
+  setObs('obs-H-rezero', rezH,   ctrlH, true);
+
+  const kWorse = floodK > ctrlK ? 'tightened' : 'unchanged';
+  const hBetter = rezH > ctrlH ? 'expanded' : 'unchanged';
+  const bImproved = rezB > floodB;
+
+  document.getElementById('obs-finding').innerHTML =
+    `Fact flooding ${floodB < ctrlB ? '<b>deepened</b>' : 'barely shifted'} endemic entrenchment: ` +
+    `coupling ${kWorse}, horizon ${floodH < ctrlH ? '<b>contracted</b>' : 'held'}. ` +
+    `Re-zeroing: baseline ${bImproved ? 'improved' : 'similar'}, horizon ${hBetter}. ` +
+    `<span style="color:var(--gold)">The B shift follows H — horizon expands first.</span>`;
+
+  document.getElementById('observations').classList.remove('hidden');
+}
+
+
+// ══════════════════════════════════════════════════════════════════
+// Controls
+// ══════════════════════════════════════════════════════════════════
+
+function getParams() {
+  return {
+    alpha:       parseFloat(document.getElementById('alpha').value),
+    kappa0:      parseFloat(document.getElementById('kappa0').value),
+    floodN:      parseInt(document.getElementById('floodn').value),
+    floodTarget: parseFloat(document.getElementById('floodi').value),
+    steps:       200,
+    floodStart:  50,
+    floodEnd:    150,
+  };
+}
+
+// Live slider labels
+['alpha','kappa0','floodn','floodi'].forEach(id => {
+  const el  = document.getElementById(id);
+  const val = document.getElementById(id + '-val');
+  el.addEventListener('input', () => {
+    val.textContent = parseFloat(el.value).toFixed(id === 'floodn' ? 0 : 2);
+  });
+});
+
+document.getElementById('run-btn').addEventListener('click', () => {
+  const btn = document.getElementById('run-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Running…';
+
+  // Defer to let UI update
+  setTimeout(() => {
+    const cfg = getParams();
+    const data = {
+      ctrl:   simulate('control',    cfg),
+      flood:  simulate('fact_flood', cfg),
+      rezero: simulate('rezero',     cfg),
+    };
+    simData = data;
+    document.getElementById('observations').classList.add('hidden');
+
+    const canvas = document.getElementById('chart');
+    startAnim(canvas, data);
+
+    btn.disabled = false;
+    btn.textContent = '▶ Run Simulation';
+  }, 16);
+});
+
+
+// ══════════════════════════════════════════════════════════════════
+// Resize handler
+// ══════════════════════════════════════════════════════════════════
+
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    if (simData) drawChart(document.getElementById('chart'), simData, 200);
+  }, 80);
+});
+
+
+// ══════════════════════════════════════════════════════════════════
+// Initial draw (show empty grid)
+// ══════════════════════════════════════════════════════════════════
+
+window.addEventListener('load', () => {
+  const canvas = document.getElementById('chart');
+  // Draw placeholder grid with 0 data steps
+  const empty = {
+    ctrl:   { B: [0.15], kappa: [0.45], H: [0.30] },
+    flood:  { B: [0.15], kappa: [0.45], H: [0.30] },
+    rezero: { B: [0.15], kappa: [0.45], H: [0.30] },
+  };
+  // Trigger real-size draw after layout settles
+  setTimeout(() => drawChart(canvas, empty, 0), 50);
+});
+</script>
+</body>
+</html>
