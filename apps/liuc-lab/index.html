@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LIUC · Resolution Topology Lab</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0D0D1A;
+      --surface:   #12121F;
+      --surface2:  #1A1A2E;
+      --border:    #2a2a3d;
+      --gold:      #DAA520;
+      --gold-dim:  #8B6914;
+      --crimson:   #e04060;
+      --green:     #4eca88;
+      --sky:       #00BFFF;
+      --violet:    #9B59FF;
+      --gray:      #666688;
+      --text:      #E8E8F0;
+      --text-dim:  #8888AA;
+      --mono:      'JetBrains Mono', monospace;
+      --radius:    6px;
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+    }
+
+    #app {
+      display: flex;
+      flex-direction: column;
+      width: 100%; height: 100%;
+    }
+
+    /* ── Header ──────────────────────────────────────────── */
+    #header {
+      flex: 0 0 auto;
+      padding: 12px 20px 10px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+    }
+    #header-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--violet);
+      font-family: var(--mono);
+      letter-spacing: 0.03em;
+    }
+    #header-sub {
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+    #header-eq {
+      margin-left: auto;
+      font-size: 10px;
+      color: var(--text-dim);
+      font-family: var(--mono);
+      opacity: 0.7;
+      font-style: italic;
+    }
+
+    /* ── Main layout ─────────────────────────────────────── */
+    #main {
+      flex: 1 1 0;
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* ── Sidebar ─────────────────────────────────────────── */
+    #sidebar {
+      flex: 0 0 230px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      padding: 16px 14px;
+      border-right: 1px solid var(--border);
+      background: var(--surface);
+      overflow-y: auto;
+    }
+
+    .param-section {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+      opacity: 0.7;
+    }
+
+    .param-group { margin-bottom: 14px; }
+
+    .param-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+    .param-label span:first-child { font-size: 11px; color: var(--text-dim); }
+    .param-val {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--gold);
+      min-width: 36px;
+      text-align: right;
+    }
+
+    input[type=range] {
+      width: 100%;
+      appearance: none;
+      height: 3px;
+      background: var(--border);
+      border-radius: 2px;
+      outline: none;
+      cursor: pointer;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      appearance: none;
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      background: var(--gold-dim);
+      border: 1px solid var(--gold);
+      transition: background 0.1s;
+    }
+    input[type=range]::-webkit-slider-thumb:hover { background: var(--gold); }
+
+    .sim-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 4px 0 14px;
+      opacity: 0.5;
+    }
+
+    /* ── Mode toggle ─────────────────────────────────────── */
+    #mode-btns {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+    .mode-btn {
+      flex: 1;
+      padding: 6px 0;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: transparent;
+      color: var(--text-dim);
+      font-family: var(--mono);
+      font-size: 10px;
+      cursor: pointer;
+      transition: all 0.15s;
+      letter-spacing: 0.03em;
+    }
+    .mode-btn.active {
+      background: rgba(155, 89, 255, 0.12);
+      border-color: var(--violet);
+      color: var(--violet);
+    }
+
+    /* ── State readout ───────────────────────────────────── */
+    .state-block {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      margin-bottom: 12px;
+    }
+    .state-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .state-row:last-child { margin-bottom: 0; }
+    .state-label { font-size: 10px; color: var(--text-dim); font-family: var(--mono); }
+    .state-val { font-size: 12px; font-family: var(--mono); font-weight: 600; }
+    .state-val.low   { color: var(--green); }
+    .state-val.mid   { color: var(--gold); }
+    .state-val.high  { color: var(--crimson); }
+
+    /* ── Bandwidth meter ─────────────────────────────────── */
+    .meter-wrap {
+      margin-bottom: 12px;
+    }
+    .meter-label {
+      font-size: 9px;
+      color: var(--text-dim);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+      font-weight: 600;
+    }
+    .meter-bar-bg {
+      width: 100%;
+      height: 8px;
+      background: var(--surface2);
+      border-radius: 4px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .meter-bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.15s, background-color 0.15s;
+    }
+
+    /* ── Finding ─────────────────────────────────────────── */
+    .finding {
+      padding: 8px 10px;
+      background: rgba(155, 89, 255, 0.05);
+      border-left: 2px solid var(--violet);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      font-size: 10.5px;
+      line-height: 1.6;
+      color: var(--text);
+      opacity: 0.85;
+      margin-top: 8px;
+    }
+
+    /* ── Chart area ──────────────────────────────────────── */
+    #chart-area {
+      flex: 1 1 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    #canvas-row {
+      flex: 1 1 0;
+      display: flex;
+      overflow: hidden;
+      gap: 1px;
+    }
+
+    #field-wrap {
+      flex: 1 1 0;
+      position: relative;
+    }
+    #field-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    #timeseries-wrap {
+      flex: 0 0 240px;
+      display: flex;
+      flex-direction: column;
+      border-left: 1px solid var(--border);
+    }
+    #timeseries-canvas {
+      width: 100%;
+      flex: 1 1 0;
+      display: block;
+    }
+    .ts-label {
+      padding: 6px 10px;
+      font-size: 9px;
+      color: var(--text-dim);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      font-weight: 600;
+    }
+
+    /* ── Legend bar ──────────────────────────────────────── */
+    #legend-bar {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 6px 18px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      font-size: 10px;
+      color: var(--text-dim);
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .legend-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+    }
+    #axis-note {
+      margin-left: auto;
+      font-family: var(--mono);
+      font-size: 9px;
+      color: var(--text-dim);
+      opacity: 0.6;
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- Header -->
+  <div id="header">
+    <span id="header-title">LIUC · Resolution Topology</span>
+    <span id="header-sub">Level of Informational Uncertainty Capture — novelty-gated encoding fidelity</span>
+    <span id="header-eq">LIUC(x,t) = k · max(|I(x,t) − B(t)|, θ_floor)  ↔  ¬CUIL</span>
+  </div>
+
+  <!-- Main -->
+  <div id="main">
+
+    <!-- Sidebar -->
+    <div id="sidebar">
+
+      <div class="param-section">Mode</div>
+      <div id="mode-btns">
+        <button class="mode-btn active" id="btn-recovery" onclick="setMode('recovery')">RECOVERY</button>
+        <button class="mode-btn" id="btn-trauma" onclick="setMode('trauma')">TRAUMA</button>
+      </div>
+
+      <div class="sim-divider"></div>
+      <div class="param-section">Gate Parameters</div>
+
+      <div class="param-group">
+        <div class="param-label">
+          <span>θ_floor · trauma floor</span>
+          <span class="param-val" id="val-theta">0.00</span>
+        </div>
+        <input type="range" id="sl-theta" min="0" max="1" step="0.01" value="0"
+               oninput="updateParam('theta', this.value)">
+      </div>
+
+      <div class="param-group">
+        <div class="param-label">
+          <span>λ · baseline plasticity</span>
+          <span class="param-val" id="val-lambda">0.12</span>
+        </div>
+        <input type="range" id="sl-lambda" min="0.01" max="0.5" step="0.01" value="0.12"
+               oninput="updateParam('lambda', this.value)">
+      </div>
+
+      <div class="sim-divider"></div>
+      <div class="param-section">Stimulus Field</div>
+
+      <div class="param-group">
+        <div class="param-label">
+          <span>σ_ext · external novelty spread</span>
+          <span class="param-val" id="val-sigma">0.35</span>
+        </div>
+        <input type="range" id="sl-sigma" min="0.05" max="1.0" step="0.01" value="0.35"
+               oninput="updateParam('sigma', this.value)">
+      </div>
+
+      <div class="param-group">
+        <div class="param-label">
+          <span>f_replay · flashback rate</span>
+          <span class="param-val" id="val-replay">0.00</span>
+        </div>
+        <input type="range" id="sl-replay" min="0" max="1" step="0.01" value="0"
+               oninput="updateParam('replay', this.value)">
+      </div>
+
+      <div class="sim-divider"></div>
+      <div class="param-section">System State</div>
+
+      <div class="state-block">
+        <div class="state-row">
+          <span class="state-label">mean LIUC</span>
+          <span class="state-val" id="disp-liuc">—</span>
+        </div>
+        <div class="state-row">
+          <span class="state-label">exec load L</span>
+          <span class="state-val" id="disp-load">—</span>
+        </div>
+        <div class="state-row">
+          <span class="state-label">gate mode</span>
+          <span class="state-val" id="disp-gate">—</span>
+        </div>
+      </div>
+
+      <div class="meter-wrap">
+        <div class="meter-label">Free bandwidth</div>
+        <div class="meter-bar-bg">
+          <div class="meter-bar-fill" id="bw-bar" style="width:80%;background:var(--green)"></div>
+        </div>
+      </div>
+
+      <div class="meter-wrap">
+        <div class="meter-label">Internal replay drain</div>
+        <div class="meter-bar-bg">
+          <div class="meter-bar-fill" id="replay-bar" style="width:0%;background:var(--crimson)"></div>
+        </div>
+      </div>
+
+      <div class="finding" id="finding-text">
+        Adjust <strong>θ_floor</strong> to observe the gate failure mode.
+        At θ = 0, only novel stimuli receive high-resolution encoding.
+      </div>
+
+    </div>
+
+    <!-- Chart area -->
+    <div id="chart-area">
+      <div id="canvas-row">
+
+        <!-- LIUC field -->
+        <div id="field-wrap">
+          <canvas id="field-canvas"></canvas>
+        </div>
+
+        <!-- Time series -->
+        <div id="timeseries-wrap">
+          <canvas id="timeseries-canvas"></canvas>
+          <div class="ts-label">Bandwidth history (200 ticks)</div>
+        </div>
+
+      </div>
+
+      <!-- Legend -->
+      <div id="legend-bar">
+        <div class="legend-item">
+          <div class="legend-dot" style="background:var(--violet);opacity:0.9"></div>
+          <span>High LIUC · high encoding fidelity</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#333355"></div>
+          <span>Low LIUC · compressed / ignored</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:var(--crimson)"></div>
+          <span>Flashback replay site</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:var(--gold)"></div>
+          <span>Baseline B(t)</span>
+        </div>
+        <span id="axis-note">← HIGH CUIL · LOW LIUC &nbsp;|&nbsp; LOW CUIL · HIGH LIUC →</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── Parameters ──────────────────────────────────────────────────────────────
+const P = {
+  theta:  0.00,   // trauma floor
+  lambda: 0.12,   // baseline plasticity
+  sigma:  0.35,   // external novelty spread
+  replay: 0.00,   // flashback rate
+};
+
+let mode = 'recovery';
+
+function setMode(m) {
+  mode = m;
+  document.getElementById('btn-recovery').classList.toggle('active', m === 'recovery');
+  document.getElementById('btn-trauma').classList.toggle('active', m === 'trauma');
+
+  const presets = {
+    recovery: { theta: 0.00, lambda: 0.12, sigma: 0.35, replay: 0.00 },
+    trauma:   { theta: 0.62, lambda: 0.04, sigma: 0.35, replay: 0.68 },
+  };
+  const pr = presets[m];
+  for (const [k, v] of Object.entries(pr)) {
+    P[k] = v;
+    document.getElementById('sl-' + k.replace('_','') ).value = v;
+    document.getElementById('val-' + k.replace('_','')).textContent = v.toFixed(2);
+  }
+  // fix slider ids
+  document.getElementById('sl-theta').value  = P.theta;
+  document.getElementById('val-theta').textContent = P.theta.toFixed(2);
+  document.getElementById('sl-lambda').value = P.lambda;
+  document.getElementById('val-lambda').textContent = P.lambda.toFixed(2);
+  document.getElementById('sl-sigma').value  = P.sigma;
+  document.getElementById('val-sigma').textContent = P.sigma.toFixed(2);
+  document.getElementById('sl-replay').value = P.replay;
+  document.getElementById('val-replay').textContent = P.replay.toFixed(2);
+}
+
+function updateParam(key, val) {
+  P[key] = parseFloat(val);
+  const id = 'val-' + key;
+  document.getElementById(id).textContent = parseFloat(val).toFixed(2);
+}
+
+// ── Simulation state ─────────────────────────────────────────────────────────
+const GRID = 64;  // field resolution
+let baseline = 0.5;
+let stimuli = [];       // [{x, y, novelty, age}]
+let flashbacks = [];    // [{x, y, intensity, age}]
+let bwHistory = new Array(200).fill(1.0);
+
+// Initialize some stimuli
+function initStimuli() {
+  stimuli = [];
+  for (let i = 0; i < 18; i++) {
+    stimuli.push({
+      x: Math.random(),
+      y: Math.random(),
+      novelty: (Math.random() - 0.5) * 2,  // deviation from baseline
+      age: Math.random() * 100,
+      vx: (Math.random() - 0.5) * 0.003,
+      vy: (Math.random() - 0.5) * 0.003,
+    });
+  }
+}
+initStimuli();
+
+// ── Field computation ────────────────────────────────────────────────────────
+let liucField = new Float32Array(GRID * GRID);
+
+function computeField() {
+  const k = 1.0;
+  const theta = P.theta;
+
+  for (let iy = 0; iy < GRID; iy++) {
+    for (let ix = 0; ix < GRID; ix++) {
+      const px = ix / GRID;
+      const py = iy / GRID;
+
+      // Novelty at this point = closest stimulus influence
+      let noveltySum = 0;
+      let wSum = 0;
+      for (const s of stimuli) {
+        const dx = px - s.x, dy = py - s.y;
+        const d2 = dx*dx + dy*dy;
+        const w = Math.exp(-d2 / (0.02 + P.sigma * 0.08));
+        noveltySum += w * Math.abs(s.novelty);
+        wSum += w;
+      }
+      const localNovelty = wSum > 0 ? noveltySum / wSum : 0;
+
+      // Flashback contribution — floods local LIUC regardless of external novelty
+      let flashContrib = 0;
+      for (const f of flashbacks) {
+        const dx = px - f.x, dy = py - f.y;
+        const d2 = dx*dx + dy*dy;
+        flashContrib += f.intensity * Math.exp(-d2 / 0.01);
+      }
+
+      // LIUC = k * max(externalNovelty, θ_floor) + flashback
+      const liuc = k * Math.max(localNovelty, theta) + flashContrib * 0.4;
+      liucField[iy * GRID + ix] = Math.min(1.0, liuc);
+    }
+  }
+}
+
+function stepSim(tick) {
+  // Drift stimuli
+  for (const s of stimuli) {
+    s.x += s.vx + (Math.random() - 0.5) * 0.001;
+    s.y += s.vy + (Math.random() - 0.5) * 0.001;
+    s.x = ((s.x % 1) + 1) % 1;
+    s.y = ((s.y % 1) + 1) % 1;
+    s.age++;
+
+    // Novelty slowly decays toward baseline (habituation)
+    const decay = 0.005 + P.lambda * 0.02;
+    s.novelty *= (1 - decay);
+
+    // Occasionally inject new novelty spike
+    if (Math.random() < 0.008) {
+      s.novelty = (Math.random() - 0.5) * 2 * P.sigma;
+    }
+  }
+
+  // Baseline drift
+  const meanInput = stimuli.reduce((a, s) => a + s.novelty, 0) / stimuli.length;
+  baseline += P.lambda * (meanInput * 0.1 - baseline * 0.01);
+  baseline = Math.max(0.05, Math.min(0.95, baseline));
+
+  // Flashbacks
+  if (Math.random() < P.replay * 0.08) {
+    // Inject flashback — replays old familiar content at fixed location
+    flashbacks.push({
+      x: 0.25 + Math.random() * 0.1,
+      y: 0.3 + Math.random() * 0.1,
+      intensity: 0.7 + Math.random() * 0.3,
+      age: 0,
+    });
+  }
+  for (const f of flashbacks) { f.age++; f.intensity *= 0.96; }
+  flashbacks = flashbacks.filter(f => f.intensity > 0.02);
+
+  computeField();
+
+  // Compute mean LIUC
+  let sum = 0;
+  for (let i = 0; i < liucField.length; i++) sum += liucField[i];
+  const meanLIUC = sum / liucField.length;
+
+  // Executive load (Lab 6 connection)
+  // L = mean LIUC * capacity scaler + flashback drain
+  const replayDrain = P.replay * 0.6;
+  const load = Math.min(1.0, meanLIUC * 1.4 + replayDrain);
+  const freeBW = Math.max(0, 1.0 - load);
+
+  // History
+  bwHistory.push(freeBW);
+  if (bwHistory.length > 200) bwHistory.shift();
+
+  return { meanLIUC, load, freeBW, replayDrain };
+}
+
+// ── Rendering ────────────────────────────────────────────────────────────────
+const fieldCanvas = document.getElementById('field-canvas');
+const fieldCtx    = fieldCanvas.getContext('2d');
+const tsCanvas    = document.getElementById('timeseries-canvas');
+const tsCtx       = tsCanvas.getContext('2d');
+
+function hexToRgb(hex) {
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return [r,g,b];
+}
+
+let imageData = null;
+
+function renderField() {
+  const W = fieldCanvas.width, H = fieldCanvas.height;
+  if (!imageData || imageData.width !== W || imageData.height !== H) {
+    imageData = fieldCtx.createImageData(W, H);
+  }
+
+  const d = imageData.data;
+  const gx = W / GRID, gy = H / GRID;
+
+  // Base: deep background #0D0D1A
+  for (let py = 0; py < H; py++) {
+    for (let px = 0; px < W; px++) {
+      const gxi = Math.min(GRID - 1, Math.floor(px / gx));
+      const gyi = Math.min(GRID - 1, Math.floor(py / gy));
+      const liuc = liucField[gyi * GRID + gxi];
+
+      // Color: low LIUC = dark midnight, high LIUC = violet/white
+      // In trauma mode, uniform violet wash. In recovery, sparse bright points.
+      let r, g, b;
+      if (liuc < 0.05) {
+        r = 13; g = 13; b = 26;
+      } else {
+        // Lerp from surface (#12121F) → violet (#9B59FF) → white
+        const t = Math.pow(liuc, 0.7);
+        if (t < 0.5) {
+          const s = t * 2;
+          r = Math.round(18 + s * (155 - 18));
+          g = Math.round(18 + s * (89  - 18));
+          b = Math.round(31 + s * (255 - 31));
+        } else {
+          const s = (t - 0.5) * 2;
+          r = Math.round(155 + s * (230 - 155));
+          g = Math.round(89  + s * (220 -  89));
+          b = Math.round(255 + s * (255 - 255));
+        }
+      }
+
+      const idx = (py * W + px) * 4;
+      d[idx]   = r;
+      d[idx+1] = g;
+      d[idx+2] = b;
+      d[idx+3] = 255;
+    }
+  }
+
+  fieldCtx.putImageData(imageData, 0, 0);
+
+  // Draw stimulus dots
+  for (const s of stimuli) {
+    const sx = s.x * W, sy = s.y * H;
+    const nov = Math.abs(s.novelty);
+    const alpha = 0.5 + nov * 0.5;
+    fieldCtx.beginPath();
+    fieldCtx.arc(sx, sy, 4 + nov * 6, 0, Math.PI * 2);
+    fieldCtx.fillStyle = `rgba(218,165,32,${alpha * 0.35})`;
+    fieldCtx.fill();
+    fieldCtx.beginPath();
+    fieldCtx.arc(sx, sy, 2, 0, Math.PI * 2);
+    fieldCtx.fillStyle = `rgba(218,165,32,${alpha})`;
+    fieldCtx.fill();
+  }
+
+  // Draw flashback sites
+  for (const f of flashbacks) {
+    const fx = f.x * W, fy = f.y * H;
+    fieldCtx.beginPath();
+    fieldCtx.arc(fx, fy, 3 + f.intensity * 12, 0, Math.PI * 2);
+    fieldCtx.fillStyle = `rgba(224,64,96,${f.intensity * 0.25})`;
+    fieldCtx.fill();
+    fieldCtx.beginPath();
+    fieldCtx.arc(fx, fy, 2, 0, Math.PI * 2);
+    fieldCtx.fillStyle = `rgba(224,64,96,${f.intensity})`;
+    fieldCtx.fill();
+  }
+
+  // Draw baseline indicator
+  const bx = baseline * W;
+  fieldCtx.beginPath();
+  fieldCtx.moveTo(bx, 0);
+  fieldCtx.lineTo(bx, H);
+  fieldCtx.strokeStyle = 'rgba(218,165,32,0.35)';
+  fieldCtx.lineWidth = 1.5;
+  fieldCtx.setLineDash([4, 4]);
+  fieldCtx.stroke();
+  fieldCtx.setLineDash([]);
+
+  // Label
+  fieldCtx.font = '10px JetBrains Mono';
+  fieldCtx.fillStyle = 'rgba(218,165,32,0.6)';
+  fieldCtx.fillText('B(t)', bx + 4, 14);
+
+  // Field title
+  fieldCtx.font = '11px JetBrains Mono';
+  fieldCtx.fillStyle = 'rgba(155,89,255,0.7)';
+  fieldCtx.fillText('LIUC FIELD  — encoding resolution topology', 12, H - 12);
+}
+
+function renderTimeSeries() {
+  const W = tsCanvas.width, H = tsCanvas.height;
+  tsCtx.fillStyle = '#0D0D1A';
+  tsCtx.fillRect(0, 0, W, H);
+
+  // Grid lines
+  tsCtx.strokeStyle = '#1a1a2e';
+  tsCtx.lineWidth = 1;
+  for (let g = 0.25; g < 1; g += 0.25) {
+    const y = H * (1 - g);
+    tsCtx.beginPath();
+    tsCtx.moveTo(0, y);
+    tsCtx.lineTo(W, y);
+    tsCtx.stroke();
+  }
+
+  // Lc threshold line (Lab 6 critical load)
+  const Lc_y = H * (1 - 0.35);
+  tsCtx.strokeStyle = 'rgba(224,64,96,0.35)';
+  tsCtx.setLineDash([3, 4]);
+  tsCtx.lineWidth = 1;
+  tsCtx.beginPath();
+  tsCtx.moveTo(0, Lc_y);
+  tsCtx.lineTo(W, Lc_y);
+  tsCtx.stroke();
+  tsCtx.setLineDash([]);
+  tsCtx.font = '9px JetBrains Mono';
+  tsCtx.fillStyle = 'rgba(224,64,96,0.55)';
+  tsCtx.fillText('Lc', W - 20, Lc_y - 4);
+
+  // BW curve
+  const n = bwHistory.length;
+  tsCtx.beginPath();
+  for (let i = 0; i < n; i++) {
+    const x = (i / (n - 1)) * W;
+    const y = H * (1 - bwHistory[i]);
+    if (i === 0) tsCtx.moveTo(x, y);
+    else tsCtx.lineTo(x, y);
+  }
+  tsCtx.strokeStyle = 'rgba(78,202,136,0.85)';
+  tsCtx.lineWidth = 1.5;
+  tsCtx.stroke();
+
+  // Fill under curve
+  tsCtx.lineTo(W, H);
+  tsCtx.lineTo(0, H);
+  tsCtx.closePath();
+  tsCtx.fillStyle = 'rgba(78,202,136,0.06)';
+  tsCtx.fill();
+
+  // Axis labels
+  tsCtx.font = '9px JetBrains Mono';
+  tsCtx.fillStyle = 'rgba(136,136,170,0.6)';
+  tsCtx.fillText('1.0', 2, 12);
+  tsCtx.fillText('0.0', 2, H - 4);
+  tsCtx.fillStyle = 'rgba(78,202,136,0.7)';
+  tsCtx.fillText('Free BW', 6, 26);
+}
+
+// ── State display ────────────────────────────────────────────────────────────
+function updateDisplay(stats) {
+  const { meanLIUC, load, freeBW, replayDrain } = stats;
+
+  const liucEl = document.getElementById('disp-liuc');
+  liucEl.textContent = meanLIUC.toFixed(3);
+  liucEl.className = 'state-val ' + (meanLIUC > 0.55 ? 'high' : meanLIUC > 0.3 ? 'mid' : 'low');
+
+  const loadEl = document.getElementById('disp-load');
+  loadEl.textContent = load.toFixed(3);
+  loadEl.className = 'state-val ' + (load > 0.75 ? 'high' : load > 0.45 ? 'mid' : 'low');
+
+  const gateEl = document.getElementById('disp-gate');
+  const gateMode = P.theta < 0.05 ? 'NOMINAL' : P.theta < 0.4 ? 'PARTIAL FAIL' : 'OPEN LOOP';
+  gateEl.textContent = gateMode;
+  gateEl.className = 'state-val ' + (P.theta < 0.05 ? 'low' : P.theta < 0.4 ? 'mid' : 'high');
+
+  const bwPct = (freeBW * 100).toFixed(0);
+  const bwBar = document.getElementById('bw-bar');
+  bwBar.style.width = bwPct + '%';
+  bwBar.style.backgroundColor = freeBW > 0.5 ? 'var(--green)' : freeBW > 0.25 ? 'var(--gold)' : 'var(--crimson)';
+
+  const rpPct = (replayDrain * 100).toFixed(0);
+  document.getElementById('replay-bar').style.width = rpPct + '%';
+
+  // Dynamic finding text
+  let finding = '';
+  if (P.theta < 0.05 && P.replay < 0.05) {
+    finding = 'Healthy gating: only genuinely novel stimuli receive high-resolution encoding. Bandwidth is preserved for new signal.';
+  } else if (P.theta > 0.5 || P.replay > 0.5) {
+    finding = 'Gate failure: every stimulus processed at maximum fidelity regardless of novelty. Load exceeds Lc — efficiency collapse (cf. Lab 6).';
+  } else if (P.replay > 0.2) {
+    finding = 'Elevated replay drain: internal flashback content consuming encoding bandwidth. External novelty response degraded.';
+  } else {
+    finding = 'Partial gate failure: elevated θ_floor raises encoding baseline. Novelty-specific resolution partially preserved.';
+  }
+  document.getElementById('finding-text').innerHTML = finding;
+}
+
+// ── Resize handling ───────────────────────────────────────────────────────────
+function resize() {
+  const fw = fieldCanvas.parentElement;
+  fieldCanvas.width  = fw.clientWidth;
+  fieldCanvas.height = fw.clientHeight;
+
+  const tw = tsCanvas.parentElement;
+  tsCanvas.width  = tw.clientWidth;
+  tsCanvas.height = tw.clientHeight - 28; // account for label
+}
+window.addEventListener('resize', resize);
+resize();
+
+// ── Main loop ────────────────────────────────────────────────────────────────
+let tick = 0;
+function loop() {
+  const stats = stepSim(tick++);
+  renderField();
+  renderTimeSeries();
+  updateDisplay(stats);
+  requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>
