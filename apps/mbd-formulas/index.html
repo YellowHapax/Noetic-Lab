@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MBD · Formula Explorer</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"
+          onload="window._katexReady=true; renderAllKatex()"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:          #0D0D1A;
+      --surface:     #12121F;
+      --surface2:    #1A1A2E;
+      --border:      #2a2a3d;
+      --border2:     #3a3a55;
+      --gold:        #DAA520;
+      --gold-dim:    #8B6914;
+      --text:        #E8E8F0;
+      --text-dim:    #7777AA;
+      --text-muted:  #4a4a6a;
+
+      /* Token colours */
+      --c-variable:  #FFD740;   /* gold    — B, I, N, D, t, K */
+      --c-greek:     #CE93D8;   /* purple  — λ κ α β σ θ ζ ω τ */
+      --c-operator:  #69F0AE;   /* green   — = + − · d/ Σ */
+      --c-paren:     #FF7043;   /* red-oran— ( ) [ ] */
+      --c-number:    #80DEEA;   /* cyan    — 0 1 0.35 … */
+      --c-fn:        #40C4FF;   /* sky     — σ() ‖·‖ exp sin */
+      --c-accent:    #FF9E80;   /* peach   — Σ ∂ integral-like ops */
+    }
+
+    html, body { width:100%; height:100%; overflow:hidden; background:var(--bg);
+                 font-family:'Inter',sans-serif; color:var(--text); font-size:14px; }
+
+    /* ── Layout ────────────────────────────────────────────── */
+    #shell { display:flex; height:100%; }
+
+    /* ── Sidebar ───────────────────────────────────────────── */
+    #sidebar {
+      width: 210px; min-width: 210px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      overflow-y: auto;
+    }
+    #sidebar-header {
+      padding: 14px 16px 10px;
+      font-family: 'Playfair Display', serif;
+      font-size: 13px;
+      color: var(--gold);
+      letter-spacing: 0.08em;
+      border-bottom: 1px solid var(--border);
+    }
+    .sb-section {
+      padding: 10px 14px 4px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .sb-item {
+      all: unset;
+      display: block;
+      padding: 7px 16px;
+      font-size: 12px;
+      cursor: pointer;
+      color: var(--text-dim);
+      border-left: 2px solid transparent;
+      transition: background 0.1s, color 0.1s, border-color 0.1s;
+    }
+    .sb-item:hover { background: rgba(255,255,255,0.04); color: var(--text); }
+    .sb-item.active {
+      background: rgba(218,165,32,0.08);
+      color: var(--gold);
+      border-left-color: var(--gold);
+    }
+
+    /* ── Main ──────────────────────────────────────────────── */
+    #main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      padding: 28px 36px;
+      gap: 0;
+    }
+
+    #formula-paper-tag {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    #formula-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    #formula-subtitle {
+      font-size: 13px;
+      color: var(--text-dim);
+      margin-bottom: 24px;
+      font-style: italic;
+    }
+
+    /* KaTeX render panel */
+    #katex-display {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 18px 24px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 64px;
+      position: relative;
+    }
+    #katex-display .katex { font-size: 1.6em; }
+    .katex-label {
+      position: absolute;
+      top: 8px; right: 12px;
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    /* Token display panel */
+    #token-display {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px 28px;
+      margin-bottom: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      gap: 2px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 20px;
+      line-height: 1.5;
+      min-height: 72px;
+      cursor: default;
+      position: relative;
+    }
+    .token-label {
+      position: absolute;
+      top: 8px; right: 12px;
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      font-family: 'Inter', sans-serif;
+    }
+
+    /* Token spans */
+    .tok {
+      display: inline-flex;
+      align-items: flex-end;
+      gap: 0;
+      border-radius: 3px;
+      padding: 0 1px;
+      transition: background 0.1s;
+      position: relative;
+    }
+    .tok[data-key] { cursor: pointer; }
+    .tok[data-key]:hover {
+      background: rgba(255,255,255,0.08);
+      outline: 1px solid currentColor;
+      outline-offset: 1px;
+    }
+    .tok[data-key].lit {
+      background: rgba(255,255,255,0.12);
+      outline: 1.5px solid currentColor;
+      outline-offset: 1px;
+    }
+    .tok-plain   { color: var(--text-dim); }
+    .tok-var     { color: var(--c-variable); font-weight: 600; }
+    .tok-greek   { color: var(--c-greek);    font-size: 1.1em; }
+    .tok-op      { color: var(--c-operator); }
+    .tok-paren   { color: var(--c-paren); }
+    .tok-num     { color: var(--c-number); }
+    .tok-fn      { color: var(--c-fn); }
+    .tok-acc     { color: var(--c-accent); }
+
+    .tok-sub  { font-size: 0.6em; vertical-align: sub;  line-height: 1; padding: 0; }
+    .tok-sup  { font-size: 0.6em; vertical-align: super; line-height: 1; padding: 0; }
+
+    /* Fraction rendering */
+    .frac {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      vertical-align: middle;
+      font-size: 0.6em;
+      line-height: 1.2;
+      margin: 0 2px;
+    }
+    .frac-num { border-bottom: 1px solid var(--c-operator); padding-bottom: 1px; }
+    .frac-den { padding-top: 2px; }
+
+    /* Description panel */
+    #formula-desc {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px 20px;
+      font-size: 13px;
+      line-height: 1.65;
+      color: var(--text-dim);
+      margin-bottom: 24px;
+    }
+    #formula-desc strong { color: var(--text); font-weight: 500; }
+
+    /* Legend */
+    #legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+    .leg-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+    .leg-swatch {
+      width: 10px; height: 10px;
+      border-radius: 2px;
+    }
+
+    /* ── Tooltip ───────────────────────────────────────────── */
+    #tooltip {
+      position: fixed;
+      z-index: 9999;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.12s;
+      max-width: 320px;
+      min-width: 220px;
+    }
+    #tooltip.visible { opacity: 1; }
+    .tt-card {
+      background: #1a1a30;
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.05);
+      overflow: hidden;
+    }
+    .tt-header {
+      padding: 9px 14px 7px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .tt-symbol {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 18px;
+      font-weight: 600;
+    }
+    .tt-badge {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border-radius: 3px;
+      background: rgba(255,255,255,0.06);
+      color: var(--text-dim);
+    }
+    .tt-label {
+      padding: 8px 14px 4px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .tt-desc {
+      padding: 2px 14px 12px;
+      font-size: 11.5px;
+      line-height: 1.55;
+      color: var(--text-dim);
+    }
+    .tt-derived {
+      padding: 6px 14px 10px;
+      font-size: 10.5px;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border);
+      font-style: italic;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  </style>
+</head>
+<body>
+
+<div id="shell">
+  <div id="sidebar">
+    <div id="sidebar-header">∫ Formula Explorer</div>
+    <div id="sb-list"></div>
+  </div>
+
+  <div id="main">
+    <div id="formula-paper-tag"></div>
+    <div id="formula-name"></div>
+    <div id="formula-subtitle"></div>
+    <div id="katex-display">
+      <span class="katex-label">KaTeX</span>
+      <span id="katex-render"></span>
+    </div>
+    <div id="token-display">
+      <span class="token-label">Interactive</span>
+      <span id="token-render"></span>
+    </div>
+    <div id="formula-desc"></div>
+    <div id="legend">
+      <div class="leg-item"><div class="leg-swatch" style="background:var(--c-variable)"></div>Variable</div>
+      <div class="leg-item"><div class="leg-swatch" style="background:var(--c-greek)"></div>Greek symbol</div>
+      <div class="leg-item"><div class="leg-swatch" style="background:var(--c-operator)"></div>Operator</div>
+      <div class="leg-item"><div class="leg-swatch" style="background:var(--c-paren)"></div>Grouping ( )</div>
+      <div class="leg-item"><div class="leg-swatch" style="background:var(--c-number)"></div>Constant</div>
+      <div class="leg-item"><div class="leg-swatch" style="background:var(--c-fn)"></div>Function</div>
+      <div class="leg-item"><div class="leg-swatch" style="background:var(--c-accent)"></div>Accumulation</div>
+    </div>
+  </div>
+</div>
+
+<div id="tooltip">
+  <div class="tt-card">
+    <div class="tt-header">
+      <span class="tt-symbol" id="tt-sym"></span>
+      <span class="tt-badge" id="tt-badge"></span>
+    </div>
+    <div class="tt-label" id="tt-label"></div>
+    <div class="tt-desc" id="tt-desc"></div>
+    <div class="tt-derived" id="tt-derived" style="display:none"></div>
+  </div>
+</div>
+
+<script>
+// ──────────────────────────────────────────────────────────────
+// GLOSSARY: key → { type, symbol, label, desc, derived? }
+// ──────────────────────────────────────────────────────────────
+const G = {
+  // Variables
+  'B': {
+    type: 'var', symbol: 'B',
+    label: 'Baseline Vector',
+    desc: "An agent's personality state encoded as a vector in multi-dimensional trait space. Each component represents a trait axis — valence, activation, dominance, trust, aggression, curiosity, status. B is the accumulated record of lived experience.",
+    derived: "Initialized at B(0) from genetic and early developmental input. Updated by every significant event via the core equation."
+  },
+  'I': {
+    type: 'var', symbol: 'I',
+    label: 'Input Signal',
+    desc: "The event or interaction at time t, encoded in the same vector space as B. The distance ||I(t) − B(t)|| is the raw surprise metric: how far this event is from where you currently are.",
+    derived: "Externally provided — represents environment, other agents, or internal recalled states."
+  },
+  'N': {
+    type: 'var', symbol: 'N',
+    label: 'Novelty N(t)',
+    desc: "Processed surprise value ∈ [0,1]. Derived from the baseline-input distance through a sigmoid gate at threshold θ_h. High N: genuinely surprising event. Low N: familiar, expected. N governs encoding probability and κ decay.",
+    derived: "N(t) = σ(||I(t) − B(t)|| − θ_h). Inherits from Paper 3 episodic encoding model."
+  },
+  'D': {
+    type: 'var', symbol: 'D',
+    label: 'Baseline Distance D(B, I)',
+    desc: "The squared Euclidean distance between input vector I and baseline B. The raw geometric surprise before sigmoid processing. Larger D = event lands far from current self = high potential encoding impact.",
+    derived: "D(B, I) = ||I − B||² = Σₖ(Iₖ − Bₖ)². Used as input to the novelty sigmoid."
+  },
+  'B_C': {
+    type: 'var', symbol: 'B_C',
+    label: 'Collective Baseline',
+    desc: "The collective's shared baseline — the center of mass of all member baseline vectors. Encodes the group's current psychological consensus. Used in the Bet framework for collective endemic baseline dynamics.",
+    derived: "B_C = (1/|C|) Σᵢ Bᵢ. Emerges from the aggregated individual baselines."
+  },
+  'H': {
+    type: 'var', symbol: 'H',
+    label: 'Collective Entropy H_C',
+    desc: "Shannon entropy of the distribution of individual baselines within the collective. High H: diverse perspectives coexist. Low H: baselines have converged to a homogeneous endemic state. The CEB model predicts H collapses under prolonged high-κ exposure.",
+    derived: "H_C = −Σᵢ pᵢ log(pᵢ). Computed over the discretized distribution of B values across members."
+  },
+  'K_ij': {
+    type: 'var', symbol: 'K_ij',
+    label: 'Coupling Matrix K_ij',
+    desc: "Pairwise coupling strength between agents i and j in a network of n agents. K_ij = κ when agents are coupled, 0 otherwise. The full matrix defines the social fabric topology.",
+    derived: "Generalizes the two-agent κ to multi-agent networks. Used in the Markov Tensor and social fabric simulators."
+  },
+  't': {
+    type: 'var', symbol: 't',
+    label: 'Discrete Time t',
+    desc: "A timestep in the simulation. Each step corresponds to one meaningful event or interaction cycle. Not clock time — event time. t=0 is the initial state; t→∞ is the asymptotic fixed point under constant input.",
+    derived: "Indexing convention. The continuous limit uses dt for differential equations."
+  },
+  'P_trans': {
+    type: 'var', symbol: 'P(sⱼ|sᵢ)',
+    label: 'Transition Probability',
+    desc: "The probability that agent i enters a social interaction state with agent j. Derived from baseline proximity: agents with similar baselines are more likely to couple. The Markov Tensor is the full n×n matrix of these probabilities.",
+    derived: "P(sⱼ|sᵢ) ∝ exp(−||Bⱼ − Bᵢ||² / τ). Normalized so each row sums to 1."
+  },
+
+  // Greek
+  'lambda': {
+    type: 'greek', symbol: 'λ',
+    label: 'λ — Plasticity / Learning Rate',
+    desc: "How deeply the current event rewrites the agent. λ = 1.0: total absorption — the new input completely replaces the prior state. λ = 0.0: perfect rigidity — no change at all. In the discrete equation, λ is the interpolation weight toward the input. High λ = psychological openness, vulnerability, or trauma response.",
+    derived: "Free parameter. In the phenomena labs: λ_ADHD ≈ 0.8, λ_typical ≈ 0.1, λ_trauma → high transiently."
+  },
+  'kappa': {
+    type: 'greek', symbol: 'κ',
+    label: 'κ — Coupling Coefficient',
+    desc: "Relational coupling strength between two agents. κ = 0: no influence — interactions don't update baselines. κ = 1: complete mutual constitution — maximal influence. κ is the fundamental dial of relationship. Its dynamics are governed by novelty: familiarity grows it, strangeness decays it.",
+    derived: "dκ/dt = α(1−N) − βκ. Initialized near 0 for strangers. Approaches α/β asymptotically under constant low-novelty contact."
+  },
+  'alpha': {
+    type: 'greek', symbol: 'α',
+    label: 'α — Coupling Gain',
+    desc: "Rate at which familiarity increases coupling. In the κ dynamics equation, α scales how quickly low-novelty interactions bond two agents. The 'attachment constant' — larger α means relationships form faster under predictable, repetitive contact.",
+    derived: "Free parameter in the coupling dynamics model. Empirically: high α in parasocial contexts (repetitive one-sided contact)."
+  },
+  'beta': {
+    type: 'greek', symbol: 'β',
+    label: 'β — Coupling Decay',
+    desc: "Natural decay rate of κ. Without continued interaction, coupling drifts toward zero — relationships require maintenance. In the CEB model (Bet), β represents the entropy force pushing the collective back toward individuation.",
+    derived: "Free parameter. At steady state without input: κ* = α(1−N)/β."
+  },
+  'sigma-fn': {
+    type: 'fn', symbol: 'σ(·)',
+    label: 'σ — Sigmoid Gate',
+    desc: "The logistic function: σ(x) = 1/(1 + e^{−x}). Maps any real value to (0, 1). Used as the novelty encoding gate: only inputs that exceed threshold θ_h by a meaningful margin have high probability of updating the baseline. Smooth, differentiable threshold.",
+    derived: "σ(x) = 1/(1+e^{-x}). At the gate: σ(||I−B|| − θ_h). Inherits from standard neural activation literature."
+  },
+  'theta_h': {
+    type: 'greek', symbol: 'θ_h',
+    label: 'θ_h — Encoding Threshold',
+    desc: "The half-activation point of the novelty sigmoid. Inputs below this distance from the baseline have low novelty and low encoding probability. Inputs above have high novelty. θ_h = 0.35 in Paper 3 was empirically calibrated against reinstatement phenomena.",
+    derived: "Free parameter. θ_h = 0.35 in Paper 3 (Episodic Recall as Resonant Re-instantiation)."
+  },
+  'zeta': {
+    type: 'greek', symbol: 'ζ',
+    label: 'ζ — Self-Preservation Floor',
+    desc: "Introduced in Paper 6 (Resonant Gate). A non-zero ζ preserves a weighted residue of the initial baseline B(0), providing an identity anchor that resists total overwrite. ζ = 0: identity is fully plastic. ζ = 1: identity is completely frozen. ζ ∈ (0,1) creates the self-preservation gradient hypothesized as the biological substrate of ego integrity.",
+    derived: "Modification to the core equation: B'(t+1) = ζ·B(0) + (1−ζ)·[standard update]. Lab: zeta_lab."
+  },
+  'tau': {
+    type: 'greek', symbol: 'τ',
+    label: 'τ — Social Temperature',
+    desc: "Controls the sharpness of the Boltzmann-style interaction probability kernel. Low τ: only agents with very similar baselines interact (high selectivity, low social mixing). High τ: interaction probability is diffuse — even dissimilar agents have coupling probability. Maps to social polarization / homophily dynamics.",
+    derived: "Used in P(sⱼ|sᵢ) ∝ exp(−dist/τ). Low τ → hard clustering. High τ → uniform mixing."
+  },
+  'omega': {
+    type: 'greek', symbol: 'ω',
+    label: 'ω — Natural Frequency',
+    desc: "In Kuramoto oscillator contexts (D2 Disgaea Tank extension): each agent's intrinsic oscillation rate before coupling. Dispersed ω values naturally desynchronize; strong coupling κ works against this dispersion to produce synchronization. r (order parameter) measures how many agents have aligned phase.",
+    derived: "From Kuramoto (1975). Used in Link Tank BTS and D2 Tank Phase Engine."
+  },
+
+  // Operators
+  'update-eq': {
+    type: 'op', symbol: '=',
+    label: '= State Assignment (not equality)',
+    desc: "This is not mathematical equality — it is a state update rule. Read: 'B at time t+1 is computed from the right-hand side and replaces the prior state.' The equation defines a dynamical system, not an algebraic identity.",
+    derived: "Standard notation for recurrence relations. The system evolves by repeated application."
+  },
+  'plus': {
+    type: 'op', symbol: '+',
+    label: '+ Superposition of signals',
+    desc: "The new baseline is the sum of two weighted contributions: the retained prior state and the incoming signal. These two terms are always complementary — their weights (1−λ) and λ sum to 1, making the update a convex combination.",
+    derived: "Ensures B remains in the same state space as I — no dimensional inflation."
+  },
+  'minus': {
+    type: 'op', symbol: '−',
+    label: '− Retention weight (1−λ)',
+    desc: "Controls how much of the prior state survives. (1−λ) is the retention weight: at λ=0, full retention (no change); at λ=1, zero retention (complete overwrite). The minus ensures plasticity and retention are complementary.",
+    derived: "Derives from the requirement that the update is a convex combination: weights must sum to 1."
+  },
+  'dot-mul': {
+    type: 'op', symbol: '·',
+    label: '· Weighted scaling',
+    desc: "Scalar-vector multiplication: scales each component of the vector by the weight. (1−λ) scales the prior B; λ scales the input I. This is the core mechanism by which experience 'rewrites' personality proportionally.",
+    derived: "Standard scalar-vector product. Preserves vector direction while adjusting magnitude."
+  },
+  'd-diff': {
+    type: 'op', symbol: 'd/dt',
+    label: 'd/dt — Time Derivative',
+    desc: "The continuous-time rate of change of κ. In discrete MBD simulations, approximated via forward Euler: dκ/dt ≈ Δκ/Δt. The full differential form reveals the steady-state behavior and stability analysis directly.",
+    derived: "Forward Euler discretization: κ(t+dt) = κ(t) + (dκ/dt)·dt."
+  },
+  'sum-acc': {
+    type: 'acc', symbol: 'Σ',
+    label: 'Σ — Summation across components or agents',
+    desc: "Accumulates contributions: either across vector components (k) when computing baseline distance, or across agents (i) in social fabric models. The index and limits below/above Σ specify exactly what is summed.",
+    derived: "Standard summation. In vector contexts: Σₖ ranges over trait dimensions. In social contexts: Σᵢ ranges over all agents."
+  },
+  'norm': {
+    type: 'fn', symbol: '‖·‖',
+    label: '‖·‖ — Euclidean Norm',
+    desc: "The length of a vector: ‖v‖ = √(Σᵢ vᵢ²). When applied as ‖I(t)−B(t)‖, computes the geometric distance between the incoming signal and the current baseline — the raw surprise distance before sigmoid processing.",
+    derived: "Standard L2 norm. ‖I−B‖² (squared norm) is used for D(B,I) to avoid the square root for efficiency."
+  },
+  'exp-fn': {
+    type: 'fn', symbol: 'exp(·)',
+    label: 'exp(·) — Exponential Function',
+    desc: "e^x — always positive, monotonically increasing. Used in the Boltzmann transition kernel and in the sigmoid function (denominator). Ensures probabilities are non-negative regardless of input sign.",
+    derived: "The choice of exponential kernel gives the Boltzmann distribution: higher-distance pairs get exponentially lower coupling probability."
+  },
+
+  // Parens
+  'paren': {
+    type: 'paren', symbol: '( )',
+    label: '( ) Grouping',
+    desc: "Establishes evaluation order and creates a semantically distinct sub-expression. In the core equation, (1−λ) and the full right-hand side are both grouped to make the two-term structure explicit. Parentheses are not decorative — their nesting determines which terms scale together.",
+    derived: "Standard mathematical grouping. Critical in (1−λ) where operator precedence would otherwise bind poorly."
+  },
+  'bracket': {
+    type: 'paren', symbol: '[ ]',
+    label: '[ ] Square brackets',
+    desc: "Used for secondary grouping, often to delineate the 'standard update' sub-expression within a larger modified equation (e.g., the ζ-preserved form). Visually distinguishes the inner update rule from the outer anchor term.",
+  },
+
+  // Numbers
+  'one': {
+    type: 'num', symbol: '1',
+    label: '1 — Unity / Complementary weight',
+    desc: "The weights in the core equation (1−λ) and λ sum to 1. This is not arbitrary — it ensures the update is a convex combination, meaning B(t+1) lies on the line segment between B(t) and I(t). The new state is always 'between' the old self and the incoming event.",
+    derived: "Required for state-space preservation: if B(t) and I(t) are in the same bounded region, B(t+1) remains there."
+  },
+  'zero': {
+    type: 'num', symbol: '0',
+    label: '0 — Null / Reference state',
+    desc: "Lower bound of plasticity (λ=0: no learning), coupling (κ=0: decoupled), or novelty (N=0: fully familiar). Also the initialization state for κ between strangers. Zero is not absence — it is a precise reference position in state space.",
+  },
+  'half-act': {
+    type: 'num', symbol: '0.35',
+    label: '0.35 — Novelty threshold θ_h',
+    desc: "Empirically calibrated threshold for the novelty encoding sigmoid in Paper 3. Inputs within 0.35 Euclidean distance of the current baseline are treated as 'familiar' — insufficient novelty to trigger strong encoding. This value produces gradients consistent with observed phantom and reinstatement phenomena.",
+    derived: "θ_h = 0.35 calibrated in Paper 3 (Episodic Recall as Resonant Re-instantiation) against phenomenological constraints."
+  },
+
+  // Generic spacing
+  'sp': { type: 'plain', symbol: ' ', label: '', desc: '' },
+};
+
+// ──────────────────────────────────────────────────────────────
+// FORMULAS
+// ──────────────────────────────────────────────────────────────
+// Each token: { t: display_text, k: glossary_key, cls?: extra_class }
+// Special tokens: { frac: [num_tokens, den_tokens] }  → rendered as fraction
+// Special tokens: { html: '...' }  → raw html (for sub/sup structure)
+
+const FORMULAS = [
+  {
+    id: 'core',
+    paper: 'Paper 1 · Baseline Deviation',
+    name: 'The Core Equation',
+    subtitle: 'Baseline update via weighted interpolation',
+    katex: 'B(t+1) = B(t)\\cdot(1-\\lambda) + I(t)\\cdot\\lambda',
+    tokens: [
+      { t:'B', k:'B' }, { t:'(', k:'paren' }, { t:'t', k:'t' }, { t:'+', k:'plus' }, { t:'1', k:'one' }, { t:')', k:'paren' },
+      { t:' = ', k:'update-eq' },
+      { t:'B', k:'B' }, { t:'(', k:'paren' }, { t:'t', k:'t' }, { t:')', k:'paren' },
+      { t:'·', k:'dot-mul' },
+      { t:'(', k:'paren' }, { t:'1', k:'one' }, { t:' − ', k:'minus' }, { t:'λ', k:'lambda' }, { t:')', k:'paren' },
+      { t:' + ', k:'plus' },
+      { t:'I', k:'I' }, { t:'(', k:'paren' }, { t:'t', k:'t' }, { t:')', k:'paren' },
+      { t:'·', k:'dot-mul' },
+      { t:'λ', k:'lambda' },
+    ],
+    desc: "<strong>The master equation of the MBD framework.</strong> An agent's personality state B is not reset by experience — it is displaced. The new state is a convex combination: (1−λ) of the old baseline persists, λ of the incoming signal is absorbed. Low λ = rigid character. High λ = plastic, vulnerable, open. The equation generates all phenomena studied across the six papers by varying λ, the coupling κ between agents, and the nature of the input I(t)."
+  },
+  {
+    id: 'coupling',
+    paper: 'Paper 1 · Baseline Deviation',
+    name: 'Coupling Dynamics',
+    subtitle: 'dκ/dt — how relationships form and dissolve',
+    katex: '\\frac{d\\kappa}{dt} = \\alpha\\cdot(1 - N) - \\beta\\cdot\\kappa',
+    tokens: [
+      { frac: [
+          [{ t:'d', k:'d-diff' }, { t:'κ', k:'kappa' }],
+          [{ t:'d', k:'d-diff' }, { t:'t', k:'t' }]
+        ]
+      },
+      { t:' = ', k:'update-eq' },
+      { t:'α', k:'alpha' }, { t:'·', k:'dot-mul' },
+      { t:'(', k:'paren' }, { t:'1', k:'one' }, { t:' − ', k:'minus' }, { t:'N', k:'N' }, { t:')', k:'paren' },
+      { t:' − ', k:'minus' },
+      { t:'β', k:'beta' }, { t:'·', k:'dot-mul' }, { t:'κ', k:'kappa' },
+    ],
+    desc: "<strong>The rate of change of relational coupling κ.</strong> Two forces oppose each other: α·(1−N) grows coupling when interactions are familiar (low novelty N ≈ 0) — repetitive, predictable contact bonds people. β·κ decays it naturally — without contact, intimacy fades. Steady state: κ* = α(1−N)/β. This is the mathematical substrate of how familiarity breeds attachment and absence breeds detachment."
+  },
+  {
+    id: 'novelty',
+    paper: 'Paper 3 · Episodic Recall',
+    name: 'Novelty Gate',
+    subtitle: 'Sigmoid-gated surprise signal',
+    katex: 'N(t) = \\sigma\\!\\left(\\|I(t) - B(t)\\| - \\theta_h\\right)',
+    tokens: [
+      { t:'N', k:'N' }, { t:'(', k:'paren' }, { t:'t', k:'t' }, { t:')', k:'paren' },
+      { t:' = ', k:'update-eq' },
+      { t:'σ', k:'sigma-fn' },
+      { t:'(', k:'paren' },
+      { t:'‖', k:'norm' }, { t:'I', k:'I' }, { t:'(', k:'paren' }, { t:'t', k:'t' }, { t:')', k:'paren' },
+      { t:' − ', k:'minus' },
+      { t:'B', k:'B' }, { t:'(', k:'paren' }, { t:'t', k:'t' }, { t:')', k:'paren' }, { t:'‖', k:'norm' },
+      { t:' − ', k:'minus' },
+      { t:'θ', k:'theta_h' }, { html: '<span class="tok tok-greek tok-sub">h</span>' },
+      { t:')', k:'paren' },
+    ],
+    desc: "<strong>How surprising is this event?</strong> The baseline-input distance ‖I−B‖ measures raw geometric surprise: how far the event lands from your current self. The sigmoid gate σ(·) converts this distance into a probability ∈ (0,1). The threshold θ_h = 0.35 sets the detection floor: events within comfortable range barely register; events that genuinely violate expectation trigger strong encoding. This explains why familiar environments don't update personality — you have to be surprised to grow."
+  },
+  {
+    id: 'sigmoid',
+    paper: 'Paper 3 · Episodic Recall',
+    name: 'Sigmoid Function',
+    subtitle: 'The logistic gate mapping distance to probability',
+    katex: '\\sigma(x) = \\frac{1}{1 + e^{-x}}',
+    tokens: [
+      { t:'σ', k:'sigma-fn' },
+      { t:'(', k:'paren' }, { t:'x', k:'I' }, { t:')', k:'paren' },
+      { t:' = ', k:'update-eq' },
+      { frac: [
+          [{ t:'1', k:'one' }],
+          [{ t:'1', k:'one' }, { t:' + ', k:'plus' }, { t:'exp', k:'exp-fn' },
+           { t:'(', k:'paren' }, { t:'−', k:'minus' }, { t:'x', k:'I' }, { t:')', k:'paren' }]
+        ]
+      },
+    ],
+    desc: "<strong>The universal soft threshold.</strong> σ maps any real number to (0,1). At x = θ_h exactly, σ = 0.5 — perfect ambiguity. Below threshold: nearly 0, event is ignored. Above: approaches 1, event is encoded. The smooth gradient means there is no abrupt cutoff — surprising events at the margin still register weakly; highly expected events are never completely immune to exceptional circumstances."
+  },
+  {
+    id: 'baseline-dist',
+    paper: 'Paper 1 · Baseline Deviation',
+    name: 'Baseline Distance',
+    subtitle: 'Geometric surprise before gating',
+    katex: 'D(B, I) = \\|I - B\\|^2 = \\sum_k (I_k - B_k)^2',
+    tokens: [
+      { t:'D', k:'D' },
+      { t:'(', k:'paren' }, { t:'B', k:'B' }, { t:',', k:'paren' }, { t:' I', k:'I' }, { t:')', k:'paren' },
+      { t:' = ', k:'update-eq' },
+      { t:'‖', k:'norm' }, { t:'I', k:'I' }, { t:' − ', k:'minus' }, { t:'B', k:'B' }, { t:'‖', k:'norm' },
+      { html: '<span class="tok tok-num tok-sup">2</span>' },
+      { t:' = ', k:'update-eq' },
+      { t:'Σ', k:'sum-acc' }, { html: '<span class="tok tok-plain tok-sub">k</span>' },
+      { t:'(', k:'paren' },
+      { t:'I', k:'I' }, { html: '<span class="tok tok-var tok-sub">k</span>' },
+      { t:' − ', k:'minus' },
+      { t:'B', k:'B' }, { html: '<span class="tok tok-var tok-sub">k</span>' },
+      { t:')', k:'paren' },
+      { html: '<span class="tok tok-num tok-sup">2</span>' },
+    ],
+    desc: "<strong>The raw geometric distance between event and self.</strong> Each component k is a trait dimension (valence, activation, dominance, etc.). The squared difference captures how much the event deviates on that dimension. Summed across all k, D(B,I) gives the total multi-dimensional surprise. The square (rather than absolute value) amplifies large deviations and is computationally efficient — no square root needed unless you need the Euclidean norm specifically."
+  },
+  {
+    id: 'zeta',
+    paper: 'Paper 6 · Resonant Gate',
+    name: 'ζ-Preserved Update',
+    subtitle: 'Identity anchor with self-preservation floor',
+    katex: "B'(t{+}1) = \\zeta\\cdot B(0) + (1{-}\\zeta)\\cdot\\bigl[B(t)(1{-}\\lambda)+I(t)\\lambda\\bigr]",
+    tokens: [
+      { t:"B'", k:'B' }, { t:'(', k:'paren' }, { t:'t', k:'t' }, { t:'+', k:'plus' }, { t:'1', k:'one' }, { t:')', k:'paren' },
+      { t:' = ', k:'update-eq' },
+      { t:'ζ', k:'zeta' }, { t:'·', k:'dot-mul' }, { t:'B', k:'B' },
+      { t:'(', k:'paren' }, { t:'0', k:'zero' }, { t:')', k:'paren' },
+      { t:' + ', k:'plus' },
+      { t:'(', k:'paren' }, { t:'1', k:'one' }, { t:' − ', k:'minus' }, { t:'ζ', k:'zeta' }, { t:')', k:'paren' },
+      { t:'·', k:'dot-mul' },
+      { t:'[', k:'bracket' },
+      { t:'B', k:'B' }, { t:'(', k:'paren' }, { t:'t', k:'t' }, { t:')', k:'paren' },
+      { t:'·', k:'dot-mul' },
+      { t:'(', k:'paren' }, { t:'1', k:'one' }, { t:' − ', k:'minus' }, { t:'λ', k:'lambda' }, { t:')', k:'paren' },
+      { t:' + ', k:'plus' },
+      { t:'I', k:'I' }, { t:'(', k:'paren' }, { t:'t', k:'t' }, { t:')', k:'paren' },
+      { t:'·', k:'dot-mul' }, { t:'λ', k:'lambda' },
+      { t:']', k:'bracket' },
+    ],
+    desc: "<strong>Identity preserved against complete overwrite.</strong> Standard MBD allows total displacement toward I if λ is large enough. The ζ-modification anchors a fraction ζ of the original B(0) permanently into every future state. This represents the biological conjecture that ego integrity — the felt continuity of self — has a substrate that resists experiential rewriting. ζ = 0 recovers standard MBD. ζ = 1 freezes identity completely."
+  },
+  {
+    id: 'bet-collective',
+    paper: 'Bet · Collective Endemic Baselines',
+    name: 'Collective Baseline Dynamics',
+    subtitle: 'How shared baselines drift under prolonged coupling',
+    katex: 'B_C(t{+}dt) = B_C(t) + \\alpha\\!\\cdot\\!(I(t) - B_C(t))\\!\\cdot\\!\\kappa(t)\\!\\cdot\\! dt',
+    tokens: [
+      { t:'B', k:'B_C' }, { html: '<span class="tok tok-var tok-sub">C</span>' },
+      { t:'(', k:'paren' }, { t:'t', k:'t' }, { t:'+', k:'plus' }, { t:'dt', k:'t' }, { t:')', k:'paren' },
+      { t:' = ', k:'update-eq' },
+      { t:'B', k:'B_C' }, { html: '<span class="tok tok-var tok-sub">C</span>' },
+      { t:'(', k:'paren' }, { t:'t', k:'t' }, { t:')', k:'paren' },
+      { t:' + ', k:'plus' },
+      { t:'α', k:'alpha' }, { t:'·', k:'dot-mul' },
+      { t:'(', k:'paren' },
+      { t:'I', k:'I' }, { t:'(', k:'paren' }, { t:'t', k:'t' }, { t:')', k:'paren' },
+      { t:' − ', k:'minus' },
+      { t:'B', k:'B_C' }, { html: '<span class="tok tok-var tok-sub">C</span>' },
+      { t:'(', k:'paren' }, { t:'t', k:'t' }, { t:')', k:'paren' },
+      { t:')', k:'paren' },
+      { t:'·', k:'dot-mul' }, { t:'κ', k:'kappa' }, { t:'(', k:'paren' }, { t:'t', k:'t' }, { t:')', k:'paren' },
+      { t:'·', k:'dot-mul' }, { t:'dt', k:'t' },
+    ],
+    desc: "<strong>The collective baseline moves toward the dominant input signal, scaled by coupling.</strong> (I − B_C) is the gap between current group consensus and what the information environment is feeding in. κ(t) controls how strongly the collective absorbs this signal: high κ = high susceptibility = vulnerability to NES (Narrative Environment Saturation). The result is a collective-level version of the core equation — the group has memory and can be displaced just as individuals can."
+  },
+  {
+    id: 'entropy',
+    paper: 'Bet · Collective Endemic Baselines',
+    name: 'Collective Entropy',
+    subtitle: 'Diversity of perspectives within a group',
+    katex: 'H_C = -\\sum_{i} p_i \\log p_i',
+    tokens: [
+      { t:'H', k:'H' }, { html: '<span class="tok tok-var tok-sub">C</span>' },
+      { t:' = ', k:'update-eq' },
+      { t:'−', k:'minus' },
+      { t:'Σ', k:'sum-acc' }, { html: '<span class="tok tok-plain tok-sub">i</span>' },
+      { t:'  p', k:'P_trans' }, { html: '<span class="tok tok-var tok-sub">i</span>' },
+      { t:' log ', k:'exp-fn' },
+      { t:'p', k:'P_trans' }, { html: '<span class="tok tok-var tok-sub">i</span>' },
+    ],
+    desc: "<strong>How homogeneous is the collective?</strong> H_C measures the spread of individual baseline vectors across the group. When everyone converges to the same baseline (endemic state), H_C → 0 — perspectives collapse to a single attractor. When baselines are diverse, H_C is high — the collective retains intellectual range. The Bet framework predicts that prolonged high-κ exposure with homogeneous input drives H_C toward zero: Collective Endemic Baseline (CEB) formation."
+  },
+  {
+    id: 'markov',
+    paper: 'Paper 2 · Markov Tensor',
+    name: 'Markov Transition Kernel',
+    subtitle: 'Probability of social interaction from baseline proximity',
+    katex: 'P(s_j \\mid s_i) \\propto \\exp\\!\\left(-\\frac{\\|B_j - B_i\\|^2}{\\tau}\\right)',
+    tokens: [
+      { t:'P', k:'P_trans' },
+      { t:'(', k:'paren' },
+      { t:'s', k:'P_trans' }, { html: '<span class="tok tok-var tok-sub">j</span>' },
+      { t:' | ', k:'paren' },
+      { t:'s', k:'P_trans' }, { html: '<span class="tok tok-var tok-sub">i</span>' },
+      { t:')', k:'paren' },
+      { t:' ∝ ', k:'update-eq' },
+      { t:'exp', k:'exp-fn' },
+      { t:'(', k:'paren' },
+      { t:'−', k:'minus' },
+      { frac: [
+          [{ t:'‖', k:'norm' }, { t:'B', k:'B' }, { html: '<span class="tok tok-var tok-sub">j</span>' }, { t:' − ', k:'minus' }, { t:'B', k:'B' }, { html: '<span class="tok tok-var tok-sub">i</span>' }, { t:'‖', k:'norm' }, { html: '<span class="tok tok-num tok-sup">2</span>' }],
+          [{ t:'τ', k:'tau' }]
+        ]
+      },
+      { t:')', k:'paren' },
+    ],
+    desc: "<strong>Agents with similar baselines are more likely to interact.</strong> This is the Boltzmann social kernel: interaction probability decays exponentially with baseline distance. τ (temperature) controls the selectivity gradient — low τ produces tight social clustering (homophily), high τ produces diffuse mixing. The full Markov Tensor P[i,j] defines the entire social fabric — who can influence whom, and how strongly. Rows are normalized so each agent's outgoing interaction probabilities sum to 1."
+  },
+];
+
+// ──────────────────────────────────────────────────────────────
+// RENDER
+// ──────────────────────────────────────────────────────────────
+
+const TYPE_CLASS = {
+  var:   'tok-var',
+  greek: 'tok-greek',
+  op:    'tok-op',
+  paren: 'tok-paren',
+  num:   'tok-num',
+  fn:    'tok-fn',
+  acc:   'tok-acc',
+  plain: 'tok-plain',
+};
+
+const TYPE_LABEL = {
+  var:   'variable',
+  greek: 'greek',
+  op:    'operator',
+  paren: 'grouping',
+  num:   'constant',
+  fn:    'function',
+  acc:   'accumulation',
+  plain: '',
+};
+
+function renderTokens(tokens) {
+  let html = '';
+  for (const tok of tokens) {
+    if (tok.html) { html += tok.html; continue; }
+    if (tok.frac) {
+      const numH = renderTokens(tok.frac[0]);
+      const denH = renderTokens(tok.frac[1]);
+      html += `<span class="frac"><span class="frac-num">${numH}</span><span class="frac-den">${denH}</span></span>`;
+      continue;
+    }
+    const gEntry = tok.k ? G[tok.k] : null;
+    if (!gEntry || !tok.k || gEntry.type === 'plain') {
+      html += `<span class="tok tok-plain">${escHtml(tok.t)}</span>`;
+    } else {
+      const cls = TYPE_CLASS[gEntry.type] || 'tok-plain';
+      html += `<span class="tok ${cls}" data-key="${escAttr(tok.k)}" title="">${escHtml(tok.t)}</span>`;
+    }
+  }
+  return html;
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function escAttr(s) {
+  return String(s).replace(/"/g,'&quot;');
+}
+
+// ──────────────────────────────────────────────────────────────
+// TOOLTIP
+// ──────────────────────────────────────────────────────────────
+const tooltip = document.getElementById('tooltip');
+const ttSym   = document.getElementById('tt-sym');
+const ttBadge = document.getElementById('tt-badge');
+const ttLabel = document.getElementById('tt-label');
+const ttDesc  = document.getElementById('tt-desc');
+const ttDeriv = document.getElementById('tt-derived');
+
+let activeKey = null;
+
+function showTooltip(key, x, y) {
+  const g = G[key];
+  if (!g || !g.label) return;
+
+  ttSym.textContent = g.symbol;
+  ttSym.style.color = `var(--c-${g.type === 'plain' ? 'text' : g.type === 'var' ? 'variable' : g.type === 'greek' ? 'greek' : g.type === 'op' ? 'operator' : g.type === 'paren' ? 'paren' : g.type === 'num' ? 'number' : g.type === 'fn' ? 'fn' : g.type === 'acc' ? 'accent' : 'text'})`;
+  ttBadge.textContent = TYPE_LABEL[g.type] || '';
+  ttLabel.textContent = g.label;
+  ttDesc.innerHTML = g.desc;
+
+  if (g.derived) {
+    ttDeriv.textContent = '↳ ' + g.derived;
+    ttDeriv.style.display = '';
+  } else {
+    ttDeriv.style.display = 'none';
+  }
+
+  // Position — keep inside viewport
+  const TW = tooltip.offsetWidth || 300, TH = tooltip.offsetHeight || 160;
+  const VW = window.innerWidth, VH = window.innerHeight;
+  let tx = x + 14, ty = y - 12;
+  if (tx + TW > VW - 8) tx = x - TW - 10;
+  if (ty + TH > VH - 8) ty = VH - TH - 8;
+  if (ty < 4) ty = 4;
+
+  tooltip.style.left = tx + 'px';
+  tooltip.style.top  = ty + 'px';
+  tooltip.classList.add('visible');
+}
+
+function hideTooltip() {
+  tooltip.classList.remove('visible');
+}
+
+document.addEventListener('mousemove', e => {
+  if (activeKey) {
+    showTooltip(activeKey, e.clientX, e.clientY);
+  }
+});
+
+// Delegate from token-display
+document.getElementById('token-render').addEventListener('mouseover', e => {
+  const tok = e.target.closest('[data-key]');
+  if (tok) {
+    const k = tok.dataset.key;
+    activeKey = k;
+    // Highlight all tokens with same key
+    document.querySelectorAll(`[data-key="${k}"]`).forEach(el => el.classList.add('lit'));
+    showTooltip(k, e.clientX, e.clientY);
+  }
+});
+document.getElementById('token-render').addEventListener('mouseout', e => {
+  const tok = e.target.closest('[data-key]');
+  if (tok) {
+    const k = tok.dataset.key;
+    activeKey = null;
+    document.querySelectorAll(`[data-key="${k}"]`).forEach(el => el.classList.remove('lit'));
+    hideTooltip();
+  }
+});
+
+// ──────────────────────────────────────────────────────────────
+// FORMULA DISPLAY
+// ──────────────────────────────────────────────────────────────
+let currentId = null;
+
+function loadFormula(id) {
+  const f = FORMULAS.find(f => f.id === id);
+  if (!f) return;
+  currentId = id;
+
+  document.getElementById('formula-paper-tag').textContent = f.paper;
+  document.getElementById('formula-name').textContent = f.name;
+  document.getElementById('formula-subtitle').textContent = f.subtitle;
+  document.getElementById('token-render').innerHTML = renderTokens(f.tokens);
+  document.getElementById('formula-desc').innerHTML = f.desc;
+
+  // KaTeX
+  const kr = document.getElementById('katex-render');
+  kr.innerHTML = '';
+  if (window._katexReady && window.katex) {
+    try {
+      window.katex.render(f.katex, kr, { throwOnError: false, displayMode: true });
+    } catch(e) { kr.textContent = f.katex; }
+  } else {
+    kr.textContent = '…';
+    // Will be rendered by renderAllKatex() when KaTeX loads
+  }
+
+  // Sidebar highlight
+  document.querySelectorAll('.sb-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.id === id);
+  });
+}
+
+window.renderAllKatex = function() {
+  if (!currentId) return;
+  const f = FORMULAS.find(f => f.id === currentId);
+  if (!f) return;
+  const kr = document.getElementById('katex-render');
+  try {
+    window.katex.render(f.katex, kr, { throwOnError: false, displayMode: true });
+  } catch(e) { kr.textContent = f.katex; }
+};
+
+// ──────────────────────────────────────────────────────────────
+// SIDEBAR
+// ──────────────────────────────────────────────────────────────
+function buildSidebar() {
+  const list = document.getElementById('sb-list');
+  let lastPaper = '';
+  FORMULAS.forEach(f => {
+    if (f.paper !== lastPaper) {
+      const sec = document.createElement('div');
+      sec.className = 'sb-section';
+      sec.textContent = f.paper;
+      list.appendChild(sec);
+      lastPaper = f.paper;
+    }
+    const btn = document.createElement('button');
+    btn.className = 'sb-item';
+    btn.dataset.id = f.id;
+    btn.textContent = f.name;
+    btn.onclick = () => loadFormula(f.id);
+    list.appendChild(btn);
+  });
+}
+
+buildSidebar();
+loadFormula(FORMULAS[0].id);
+</script>
+</body>
+</html>

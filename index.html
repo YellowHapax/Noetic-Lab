@@ -445,6 +445,10 @@
       <div class="dsk-icon-img" style="background:linear-gradient(135deg,#0d1a12,#08110d);color:#4eca88;border:1px solid #1a3a24;font-family:'JetBrains Mono',monospace;font-size:14px;">β</div>
       <div class="dsk-icon-label">Bet Sim</div>
     </div>
+    <div class="dsk-icon" id="dsk-formulas" ondblclick="WM.focus('formulas')" onclick="selectDskIcon('dsk-formulas')">
+      <div class="dsk-icon-img" style="background:linear-gradient(135deg,#1a0d2a,#0d0818);color:#CE93D8;border:1px solid #3a1a4a;font-family:'JetBrains Mono',monospace;font-size:18px;">∑</div>
+      <div class="dsk-icon-label">Formulas</div>
+    </div>
   </div>
 </div>
 
@@ -476,6 +480,11 @@
   <div class="dock-item" id="dock-bet" onclick="WM.focus('bet')">
     <div class="dock-icon" style="background: linear-gradient(135deg,#0d1a12,#08110d); color:#4eca88; border:1px solid #1a3a24; font-family:'JetBrains Mono',monospace; font-size:16px;">β</div>
     <div class="dock-label">Bet Sim</div>
+    <div class="dock-dot"></div>
+  </div>
+  <div class="dock-item" id="dock-formulas" onclick="WM.focus('formulas')">
+    <div class="dock-icon" style="background: linear-gradient(135deg,#1a0d2a,#0d0818); color:#CE93D8; border:1px solid #3a1a4a; font-family:'JetBrains Mono',monospace; font-size:20px;">∑</div>
+    <div class="dock-label">Formulas</div>
     <div class="dock-dot"></div>
   </div>
 </div>
@@ -687,6 +696,18 @@ function buildBetWindow() {
   WM.create({
     id: 'bet', title: 'Bet · Collective Baseline Dynamics Simulator', accentColor: '#4eca88',
     x: 140, y: 60, w: 980, h: 600, body, minimized: true
+  });
+}
+
+
+// ══════════════════════════════════════════════════════
+// MBD Formula Explorer
+// ══════════════════════════════════════════════════════
+function buildFormulasWindow() {
+  const body = `<iframe class="win-iframe" src="apps/mbd-formulas/index.html" id="formulas-iframe" loading="lazy" title="MBD Formula Explorer"></iframe>`;
+  WM.create({
+    id: 'formulas', title: 'MBD · Formula Explorer', accentColor: '#CE93D8',
+    x: 160, y: 50, w: 1020, h: 640, body, minimized: true
   });
 }
 
@@ -1046,6 +1067,7 @@ window.addEventListener('load', () => {
   buildMBDWindow();
   buildStellaWindow();
   buildBetWindow();
+  buildFormulasWindow();
 
   setTimeout(() => { bar.style.width = '100%'; }, 800);
   setTimeout(() => {
