@@ -1,0 +1,236 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Celluwar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#0D0D1A;--surface:#12121F;--border:#1E1E2E;
+    --p1:#FF7A1A;--p2:#1A8FFF;--empty:#1A1A2E;
+    --gold:#DAA520;--text:#E8E8F0;--sub:#8888AA;
+    --born:#44FF88;--conv:#FF44AA;--dead:#555577;
+  }
+  body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    min-height:100vh;padding:16px;user-select:none;}
+  h1{font-size:1.4rem;font-weight:700;letter-spacing:.08em;color:var(--gold);margin-bottom:4px;}
+  .tagline{font-size:.75rem;color:var(--sub);margin-bottom:16px;letter-spacing:.05em;}
+  .hud{display:flex;gap:24px;margin-bottom:14px;align-items:center;}
+  .score-block{display:flex;flex-direction:column;align-items:center;gap:2px;}
+  .score-label{font-size:.68rem;color:var(--sub);text-transform:uppercase;letter-spacing:.06em;}
+  .score-val{font-size:1.5rem;font-weight:700;font-family:'JetBrains Mono',monospace;}
+  .score-val.p1{color:var(--p1);}
+  .score-val.p2{color:var(--p2);}
+  .turn-block{text-align:center;}
+  .turn-dot{width:14px;height:14px;border-radius:50%;margin:0 auto 4px;transition:background .3s;}
+  .turn-dot.p1{background:var(--p1);box-shadow:0 0 8px var(--p1);}
+  .turn-dot.p2{background:var(--p2);box-shadow:0 0 8px var(--p2);}
+  .turn-label{font-size:.68rem;color:var(--sub);}
+  .board{
+    display:grid;grid-template-columns:repeat(5,1fr);
+    gap:5px;background:var(--border);padding:5px;border-radius:8px;
+    border:1px solid #252535;
+  }
+  .cell{
+    width:72px;height:72px;border-radius:5px;
+    background:var(--empty);border:1px solid #252535;
+    cursor:pointer;transition:background .15s,transform .1s;
+    position:relative;overflow:hidden;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .cell:hover:not(.taken){background:#22223A;transform:scale(1.04);}
+  .cell.taken{cursor:default;}
+  .cell.p1{background:var(--p1);opacity:.85;}
+  .cell.p2{background:var(--p2);opacity:.85;}
+  .cell-inner{width:32px;height:32px;border-radius:50%;transition:transform .2s;}
+  .cell.p1 .cell-inner{background:rgba(255,255,255,.18);}
+  .cell.p2 .cell-inner{background:rgba(255,255,255,.18);}
+  @keyframes birthPulse{0%{transform:scale(0);opacity:0}60%{transform:scale(1.3)}100%{transform:scale(1);opacity:1}}
+  @keyframes convertFlash{0%{filter:brightness(3)}100%{filter:brightness(1)}}
+  @keyframes deathFade{0%{opacity:.85}100%{opacity:0;transform:scale(.5)}}
+  .cell.born .cell-inner{animation:birthPulse .4s ease-out forwards;}
+  .cell.converted{animation:convertFlash .35s ease-out;}
+  .cell.died{animation:deathFade .35s ease-out forwards;pointer-events:none;}
+  .controls{margin-top:14px;display:flex;gap:10px;}
+  button{
+    padding:7px 18px;border-radius:5px;border:1px solid #333;
+    background:#1A1A2E;color:var(--sub);font-family:'Inter',sans-serif;
+    font-size:.8rem;cursor:pointer;transition:all .15s;
+  }
+  button:hover{background:#252540;color:var(--text);}
+  button.primary{background:var(--p1);color:#fff;border-color:var(--p1);}
+  button.primary:hover{filter:brightness(1.15);}
+  .rules{margin-top:14px;max-width:380px;font-size:.72rem;color:var(--sub);
+    line-height:1.6;text-align:center;border-top:1px solid var(--border);padding-top:10px;}
+  .rules b{color:var(--text);}
+  .overlay{
+    position:fixed;inset:0;background:rgba(0,0,0,.75);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    z-index:100;opacity:0;pointer-events:none;transition:opacity .4s;
+  }
+  .overlay.show{opacity:1;pointer-events:all;}
+  .overlay-card{background:var(--surface);border:1px solid var(--border);
+    border-radius:12px;padding:32px 40px;text-align:center;min-width:260px;}
+  .overlay-title{font-size:1.6rem;font-weight:700;margin-bottom:8px;}
+  .overlay-sub{font-size:.9rem;color:var(--sub);margin-bottom:24px;}
+  .overlay-title.p1{color:var(--p1);}
+  .overlay-title.p2{color:var(--p2);}
+  .overlay-title.draw{color:var(--gold);}
+</style>
+</head>
+<body>
+<h1>⬡ CELLUWAR</h1>
+<p class="tagline">cellular automata territory · 5×5</p>
+
+<div class="hud">
+  <div class="score-block">
+    <div class="score-label">Orange</div>
+    <div class="score-val p1" id="s1">0</div>
+  </div>
+  <div class="turn-block">
+    <div class="turn-dot p1" id="turn-dot"></div>
+    <div class="turn-label" id="turn-label">Turn 1</div>
+  </div>
+  <div class="score-block">
+    <div class="score-label">Blue</div>
+    <div class="score-val p2" id="s2">0</div>
+  </div>
+</div>
+
+<div class="board" id="board"></div>
+
+<div class="controls">
+  <button onclick="undoLast()" id="btn-undo">↩ Undo</button>
+  <button onclick="initGame()" class="primary">↺ New Game</button>
+</div>
+
+<div class="rules">
+  <b>Each turn:</b> place 1 piece on any empty cell, then CA fires.<br>
+  <b>Birth:</b> empty cell with 3+ your neighbors → yours.<br>
+  <b>Convert:</b> enemy cell with 3+ your neighbors → yours.<br>
+  <b>Death:</b> your cell with 0 total neighbors → removed.<br>
+  <b>Win:</b> hold 13+ cells, or opponent reaches 0.
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="overlay-card">
+    <div class="overlay-title" id="ov-title"></div>
+    <div class="overlay-sub" id="ov-sub"></div>
+    <button class="primary" onclick="initGame()">Play Again</button>
+  </div>
+</div>
+
+<script>
+const GRID=5, TOTAL_CELLS=25, BIRTH_THRESHOLD=3, CONVERT_THRESHOLD=3;
+let board, prevBoard, currentP, turnNum, gameOver;
+
+function neighbors(i){
+  const r=Math.floor(i/GRID),c=i%GRID,ns=[];
+  [[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,-1],[1,1]].forEach(([dr,dc])=>{
+    const nr=r+dr,nc=c+dc;
+    if(nr>=0&&nr<GRID&&nc>=0&&nc<GRID)ns.push(nr*GRID+nc);
+  });
+  return ns;
+}
+function countNeighbors(i,p,b){return neighbors(i).filter(j=>b[j]===p).length;}
+function totalNeighbors(i,b){return neighbors(i).filter(j=>b[j]!==0).length;}
+
+function caStep(b,placer){
+  const next=[...b];
+  const born=new Set(),converted=new Set(),died=new Set();
+  const opp=placer===1?2:1;
+  for(let i=0;i<TOTAL_CELLS;i++){
+    const my=countNeighbors(i,placer,b);
+    const total=totalNeighbors(i,b);
+    if(b[i]===0&&my>=BIRTH_THRESHOLD){next[i]=placer;born.add(i);}
+    else if(b[i]===opp&&my>=CONVERT_THRESHOLD){next[i]=placer;converted.add(i);}
+    else if(b[i]===placer&&total===0){next[i]=0;died.add(i);}
+  }
+  return{next,born,converted,died};
+}
+
+function initGame(){
+  board=new Array(TOTAL_CELLS).fill(0);
+  prevBoard=null;currentP=1;turnNum=1;gameOver=false;
+  document.getElementById('overlay').classList.remove('show');
+  document.getElementById('btn-undo').disabled=false;
+  renderBoard(false);updateHUD();
+}
+
+function renderBoard(anim,born,converted,died){
+  const el=document.getElementById('board');
+  el.innerHTML='';
+  board.forEach((v,i)=>{
+    const cell=document.createElement('div');
+    cell.className='cell'+(v===1?' p1 taken':v===2?' p2 taken':'');
+    if(anim){
+      if(born&&born.has(i))cell.classList.add('born');
+      else if(converted&&converted.has(i))cell.classList.add('converted');
+      else if(died&&died.has(i))cell.classList.add('died');
+    }
+    const inner=document.createElement('div');
+    inner.className='cell-inner';
+    cell.appendChild(inner);
+    if(!gameOver&&v===0)cell.onclick=()=>onCellClick(i);
+    el.appendChild(cell);
+  });
+}
+
+function onCellClick(idx){
+  if(gameOver||board[idx]!==0)return;
+  prevBoard=[...board];
+  board[idx]=currentP;
+  const{next,born,converted,died}=caStep(board,currentP);
+  board=next;
+  renderBoard(true,born,converted,died);
+  const p1c=board.filter(x=>x===1).length;
+  const p2c=board.filter(x=>x===2).length;
+  document.getElementById('s1').textContent=p1c;
+  document.getElementById('s2').textContent=p2c;
+  if(p1c>=13){endGame(1,p1c,p2c);return;}
+  if(p2c>=13){endGame(2,p1c,p2c);return;}
+  if(p1c===0&&p2c===0){endGame(0,p1c,p2c);return;}
+  if(p1c===0){endGame(2,p1c,p2c);return;}
+  if(p2c===0){endGame(1,p1c,p2c);return;}
+  currentP=currentP===1?2:1;turnNum++;
+  updateHUD();
+}
+
+function endGame(winner,p1c,p2c){
+  gameOver=true;
+  const ov=document.getElementById('overlay');
+  const ot=document.getElementById('ov-title');
+  const os=document.getElementById('ov-sub');
+  if(winner===1){ot.textContent='Orange Wins';ot.className='overlay-title p1';}
+  else if(winner===2){ot.textContent='Blue Wins';ot.className='overlay-title p2';}
+  else{ot.textContent='Draw';ot.className='overlay-title draw';}
+  os.textContent=`${p1c} orange · ${p2c} blue`;
+  ov.classList.add('show');
+}
+
+function updateHUD(){
+  const dot=document.getElementById('turn-dot');
+  dot.className='turn-dot '+(currentP===1?'p1':'p2');
+  document.getElementById('turn-label').textContent=`Turn ${turnNum}`;
+  const p1c=board.filter(x=>x===1).length;
+  const p2c=board.filter(x=>x===2).length;
+  document.getElementById('s1').textContent=p1c;
+  document.getElementById('s2').textContent=p2c;
+}
+
+function undoLast(){
+  if(!prevBoard||gameOver)return;
+  board=prevBoard;prevBoard=null;
+  currentP=currentP===1?2:1;
+  if(turnNum>1)turnNum--;
+  renderBoard(false);updateHUD();
+}
+
+initGame();
+</script>
+</body>
+</html>
