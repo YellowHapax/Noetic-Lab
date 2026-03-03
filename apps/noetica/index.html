@@ -135,37 +135,15 @@
     }
     .cancel-btn:hover { border-color: #ff6060; color: #ff6060; }
 
-    /* ── Board ── */
-    #board-area { display: flex; flex-direction: column; align-items: center; gap: 4px; flex-shrink: 0; }
-    .coord-row { display: flex; align-items: center; padding: 0 2px; }
-    .c-corner { width: 20px; }
-    .c-lbl {
-      font-size: 9px; color: var(--dim); text-align: center;
-      font-family: 'JetBrains Mono', monospace;
+    /* ── Board canvas (Three.js 3D) ── */
+    #board-area {
+      flex: 1; min-width: 0; min-height: 0; margin: 0 10px;
+      display: flex; align-items: stretch;
     }
-    .board-mid { display: flex; gap: 4px; }
-    .coord-col { display: flex; flex-direction: column; padding: 2px 0; }
-    #board {
-      display: grid; grid-template-columns: repeat(5, 1fr);
-      gap: 3px; background: #060408;
-      border: 2px solid #3a2510; border-radius: 4px; padding: 3px;
+    #three-canvas {
+      display: block; width: 100%; height: 100%;
+      border-radius: 8px; border: 1px solid var(--border); cursor: pointer;
     }
-    .cell {
-      width: 74px; height: 74px; border-radius: 3px;
-      position: relative; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: box-shadow .12s, opacity .12s;
-    }
-    .cell.light { background: var(--light-sq); }
-    .cell.dark  { background: var(--dark-sq); }
-    /* Phase hints */
-    .cell.valid   { box-shadow: inset 0 0 0 2px rgba(218,165,32,.7); }
-    .cell.blocked { opacity: .45; cursor: not-allowed; }
-    .cell.from    { box-shadow: inset 0 0 0 2px #fff4; background: rgba(255,255,255,.04); }
-    .cell.current { box-shadow: inset 0 0 0 2px rgba(218,165,32,1), 0 0 8px rgba(218,165,32,.3); }
-    /* Win road */
-    .cell.road-a  { box-shadow: inset 0 0 0 2px var(--a), 0 0 10px rgba(255,122,32,.35); }
-    .cell.road-b  { box-shadow: inset 0 0 0 2px var(--b), 0 0 10px rgba(0,191,255,.35); }
 
     /* ── Message bar ── */
     #msg {
@@ -213,6 +191,8 @@
     }
     .rules-body.open { display: block; }
   </style>
+  <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+  <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 </head>
 <body>
 
@@ -263,15 +243,9 @@
     </div>
   </div>
 
-  <!-- Board -->
+  <!-- 3D Board -->
   <div id="board-area">
-    <div class="coord-row" id="coord-top"></div>
-    <div class="board-mid">
-      <div class="coord-col" id="coord-left"></div>
-      <div id="board"></div>
-      <div class="coord-col" id="coord-right"></div>
-    </div>
-    <div class="coord-row" id="coord-bot"></div>
+    <canvas id="three-canvas"></canvas>
   </div>
 
   <!-- Panel B -->
@@ -618,203 +592,150 @@ function showWin(player) {
 function restartGame() {
   document.getElementById('overlay').classList.remove('show');
   init();
-  buildCoords();
   render();
   setMsg("Amber's turn — place a piece or move a stack.");
 }
 
-// ── Rendering ─────────────────────────────────────────────────────
-function render() {
-  renderBoard();
-  renderUI();
+// ── Three.js 3D Rendering ─────────────────────────────────────────
+const CELL = 1.12;
+let _scene, _camera, _renderer, _orbit;
+let _tiles = [], _pieces3D = [];
+let _threeReady = false, _rc, _mv;
+
+function initThree() {
+  const canvas = document.getElementById('three-canvas');
+  if (!canvas || typeof THREE === 'undefined') return;
+  const cx0 = (N-1)*CELL/2;
+  _scene = new THREE.Scene();
+  _scene.background = new THREE.Color(0x0D0D1A);
+  _scene.fog = new THREE.Fog(0x0D0D1A, 20, 35);
+  _camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
+  _camera.position.set(cx0, 7.5, cx0 + 7.2);
+  _camera.lookAt(cx0, 0, cx0);
+  _renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  _renderer.setPixelRatio(window.devicePixelRatio);
+  _renderer.shadowMap.enabled = true;
+  _renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  _scene.add(new THREE.AmbientLight(0xffffff, 0.48));
+  const sun = new THREE.DirectionalLight(0xffffff, 1.05);
+  sun.position.set(4, 11, 7); sun.castShadow = true;
+  sun.shadow.mapSize.set(1024, 1024);
+  sun.shadow.camera.near=1; sun.shadow.camera.far=28;
+  sun.shadow.camera.left=-7; sun.shadow.camera.right=7;
+  sun.shadow.camera.top=7; sun.shadow.camera.bottom=-7;
+  _scene.add(sun);
+  const rim = new THREE.DirectionalLight(0x4466cc, 0.28);
+  rim.position.set(-4, 5, -5); _scene.add(rim);
+  const plat = new THREE.Mesh(
+    new THREE.BoxGeometry(N*CELL+0.22, 0.1, N*CELL+0.22),
+    new THREE.MeshLambertMaterial({ color: 0x080810 })
+  );
+  plat.position.set(cx0, -0.1, cx0); plat.receiveShadow = true; _scene.add(plat);
+  _tiles = [];
+  for (let i = 0; i < N*N; i++) {
+    const col=i%N, row=Math.floor(i/N), light=(col+row)%2===0;
+    const m = new THREE.Mesh(
+      new THREE.BoxGeometry(CELL-0.06, 0.1, CELL-0.06),
+      new THREE.MeshLambertMaterial({ color: light?0x281e14:0x18100c, emissive: new THREE.Color(0) })
+    );
+    m.position.set(col*CELL, 0, row*CELL); m.receiveShadow=true; m.userData.cellIndex=i;
+    _scene.add(m); _tiles.push(m);
+  }
+  _orbit = new THREE.OrbitControls(_camera, _renderer.domElement);
+  _orbit.target.set(cx0, 0, cx0); _orbit.enablePan=false;
+  _orbit.minDistance=3; _orbit.maxDistance=22; _orbit.maxPolarAngle=Math.PI/2.08;
+  _orbit.update();
+  _rc = new THREE.Raycaster(); _mv = new THREE.Vector2();
+  const ro = new ResizeObserver(_resizeThree);
+  ro.observe(canvas.parentElement||canvas); _resizeThree();
+  canvas.addEventListener('click', _onThreeClick);
+  _threeReady = true; _loop(); renderBoard();
 }
+
+function _resizeThree() {
+  const c=document.getElementById('three-canvas'); if(!c||!_renderer) return;
+  const p=c.parentElement, w=p?p.clientWidth:c.clientWidth, h=p?p.clientHeight:c.clientHeight;
+  _renderer.setSize(w,h,false); _camera.aspect=w/Math.max(h,1); _camera.updateProjectionMatrix();
+}
+function _loop() { requestAnimationFrame(_loop); _orbit.update(); _renderer.render(_scene,_camera); }
+function _onThreeClick(e) {
+  const c=document.getElementById('three-canvas'), r=c.getBoundingClientRect();
+  _mv.x=((e.clientX-r.left)/r.width)*2-1; _mv.y=-((e.clientY-r.top)/r.height)*2+1;
+  _rc.setFromCamera(_mv,_camera);
+  const hits=_rc.intersectObjects(_tiles); if(hits.length) onCellClick(hits[0].object.userData.cellIndex);
+}
+
+function _makePiece(type, owner, isTop) {
+  const bright=owner===0?0xFF7A20:0x00BFFF, dark=owner===0?0x7a3a0e:0x005070;
+  const col=isTop?bright:dark;
+  const emv=isTop?new THREE.Color(col).multiplyScalar(0.16):new THREE.Color(0);
+  if (type==='land') {
+    const m=new THREE.Mesh(new THREE.CylinderGeometry(0.35,0.35,0.09,22),new THREE.MeshLambertMaterial({color:col,emissive:emv}));
+    m.castShadow=true; return {mesh:m,halfH:0.045};
+  }
+  if (type==='wall') {
+    const m=new THREE.Mesh(new THREE.BoxGeometry(0.14,0.46,0.30),new THREE.MeshLambertMaterial({color:col,emissive:emv}));
+    m.castShadow=true; return {mesh:m,halfH:0.23};
+  }
+  if (type==='cap') {
+    const g=new THREE.Group();
+    const disc=new THREE.Mesh(new THREE.CylinderGeometry(0.30,0.30,0.08,22),new THREE.MeshLambertMaterial({color:col}));
+    disc.castShadow=true; g.add(disc);
+    const dome=new THREE.Mesh(
+      new THREE.SphereGeometry(0.24,18,9,0,Math.PI*2,0,Math.PI/2),
+      new THREE.MeshLambertMaterial({color:col,emissive:isTop?new THREE.Color(col).multiplyScalar(0.38):new THREE.Color(0)})
+    );
+    dome.position.y=0.04; dome.castShadow=true; g.add(dome);
+    return {mesh:g,halfH:0.24};
+  }
+  return null;
+}
+
+function render() { renderBoard(); renderUI(); }
 
 function renderBoard() {
-  const boardEl = document.getElementById('board');
-  boardEl.innerHTML = '';
-  const valids = phase === 'carry-drop' ? validDropSquares() : [];
-
-  for (let i = 0; i < N*N; i++) {
-    const cell = document.createElement('div');
-    cell.className = 'cell ' + ((cx(i)+cy(i))%2===0 ? 'light' : 'dark');
-    cell.dataset.i = i;
-    cell.onclick = () => onCellClick(i);
-
-    // Phase-based cell classes
-    if (winRoad) {
-      if (winRoad.has(i)) cell.classList.add(turn===0 ? 'road-a' : 'road-b');
-    } else if (phase === 'placing') {
-      cell.classList.add(topPiece(i) ? 'blocked' : 'valid');
-    } else if (phase === 'carry-select') {
-      const top = topPiece(i);
-      cell.classList.add((top && top.owner===turn) ? 'valid' : 'blocked');
-    } else if (phase === 'carry-count') {
-      cell.classList.add(i === carryOrigin ? 'from' : 'blocked');
-    } else if (phase === 'carry-drop') {
-      if (i === carryOrigin) cell.classList.add('from');
-      else if (i === carryPos) cell.classList.add('current');
-      else if (valids.includes(i)) cell.classList.add('valid');
-      else cell.classList.add('blocked');
+  if (!_threeReady) return;
+  _pieces3D.forEach(o=>_scene.remove(o)); _pieces3D=[];
+  const valids=phase==='carry-drop'?validDropSquares():[];
+  for (let i=0; i<N*N; i++) {
+    const col=i%N, row=Math.floor(i/N), light=(col+row)%2===0, t=_tiles[i];
+    t.material.color.set(light?0x281e14:0x18100c); t.material.emissive.set(0);
+    t.material.transparent=false; t.material.opacity=1;
+    if (winRoad&&winRoad.has(i)) t.material.emissive.set(turn===0?0x3a1800:0x003055);
+    else if (phase==='placing')      { if(!topPiece(i)) t.material.emissive.set(0x161000); else{t.material.transparent=true;t.material.opacity=0.36;} }
+    else if (phase==='carry-select') { const tp=topPiece(i); if(tp&&tp.owner===turn) t.material.emissive.set(0x161000); else{t.material.transparent=true;t.material.opacity=0.36;} }
+    else if (phase==='carry-count')  { if(i===carryOrigin) t.material.emissive.set(0x101528); else{t.material.transparent=true;t.material.opacity=0.36;} }
+    else if (phase==='carry-drop') {
+      if(i===carryOrigin) t.material.emissive.set(0x080820);
+      else if(i===carryPos) t.material.emissive.set(0x1a1400);
+      else if(valids.includes(i)) t.material.emissive.set(0x100a00);
+      else{t.material.transparent=true;t.material.opacity=0.36;}
     }
-
-    cell.appendChild(buildCellSVG(i));
-    boardEl.appendChild(cell);
+    t.material.needsUpdate=true;
   }
-}
-
-function buildCellSVG(i) {
-  const pieces = board[i].pieces;
-  const W = 68, H = 68;
-  const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
-  svg.setAttribute('width', W); svg.setAttribute('height', H);
-  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
-  svg.style.overflow = 'visible';
-
-  if (!pieces.length) return svg;
-  const count = pieces.length;
-
-  // Draw lower layers as thin slivers
-  const sliverH = 5, sliverGap = 3;
-  for (let k = 0; k < Math.min(count-1, 5); k++) {
-    const p = pieces[k];
-    const col = p.owner===0 ? '#FF7A20' : '#00BFFF';
-    const dimCol = p.owner===0 ? '#7a3a0e' : '#005f7f';
-    const y = H - 14 - k*(sliverH+sliverGap-1);
-    const rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
-    rect.setAttribute('x','7'); rect.setAttribute('y', y);
-    rect.setAttribute('width','54'); rect.setAttribute('height',sliverH);
-    rect.setAttribute('rx','1.5');
-    rect.setAttribute('fill', dimCol);
-    rect.setAttribute('stroke', col); rect.setAttribute('stroke-width','0.8');
-    rect.setAttribute('opacity','0.65');
-    svg.appendChild(rect);
-  }
-
-  // Draw top piece
-  const top = pieces[count-1];
-  const mainCol  = top.owner===0 ? '#FF7A20' : '#00BFFF';
-  const darkCol  = top.owner===0 ? '#7a3a0e' : '#005070';
-  const lightCol = top.owner===0 ? '#ffac70' : '#70deff';
-  const baseY = H - 14 - Math.min(count-1,5)*(sliverH+sliverGap-1);
-
-  if (top.type === 'land') {
-    // Flat stone: wide, low rectangle
-    const g = document.createElementNS('http://www.w3.org/2000/svg','g');
-    // Shadow
-    const sh = document.createElementNS('http://www.w3.org/2000/svg','rect');
-    sh.setAttribute('x','10'); sh.setAttribute('y', baseY-9);
-    sh.setAttribute('width','50'); sh.setAttribute('height','12');
-    sh.setAttribute('rx','3'); sh.setAttribute('fill','#000'); sh.setAttribute('opacity','0.3');
-    g.appendChild(sh);
-    // Body
-    const body = document.createElementNS('http://www.w3.org/2000/svg','rect');
-    body.setAttribute('x','8'); body.setAttribute('y', baseY-11);
-    body.setAttribute('width','52'); body.setAttribute('height','12');
-    body.setAttribute('rx','3'); body.setAttribute('fill', darkCol);
-    body.setAttribute('stroke', mainCol); body.setAttribute('stroke-width','1.5');
-    g.appendChild(body);
-    // Highlight
-    const hl = document.createElementNS('http://www.w3.org/2000/svg','rect');
-    hl.setAttribute('x','12'); hl.setAttribute('y', baseY-9);
-    hl.setAttribute('width','8'); hl.setAttribute('height','4');
-    hl.setAttribute('rx','1'); hl.setAttribute('fill', lightCol); hl.setAttribute('opacity','0.5');
-    g.appendChild(hl);
-    svg.appendChild(g);
-
-  } else if (top.type === 'wall') {
-    // Standing wall: tall thin rectangle
-    const g = document.createElementNS('http://www.w3.org/2000/svg','g');
-    const wallH = 36;
-    const wallTop = baseY - wallH;
-    // Shadow
-    const sh = document.createElementNS('http://www.w3.org/2000/svg','rect');
-    sh.setAttribute('x','30'); sh.setAttribute('y', wallTop+2);
-    sh.setAttribute('width','16'); sh.setAttribute('height', wallH);
-    sh.setAttribute('rx','2'); sh.setAttribute('fill','#000'); sh.setAttribute('opacity','0.3');
-    g.appendChild(sh);
-    // Body
-    const body = document.createElementNS('http://www.w3.org/2000/svg','rect');
-    body.setAttribute('x','26'); body.setAttribute('y', wallTop);
-    body.setAttribute('width','16'); body.setAttribute('height', wallH);
-    body.setAttribute('rx','2'); body.setAttribute('fill', darkCol);
-    body.setAttribute('stroke', mainCol); body.setAttribute('stroke-width','1.5');
-    g.appendChild(body);
-    // Highlight
-    const hl = document.createElementNS('http://www.w3.org/2000/svg','rect');
-    hl.setAttribute('x','29'); hl.setAttribute('y', wallTop+4);
-    hl.setAttribute('width','4'); hl.setAttribute('height','10');
-    hl.setAttribute('rx','1'); hl.setAttribute('fill', lightCol); hl.setAttribute('opacity','0.5');
-    g.appendChild(hl);
-    svg.appendChild(g);
-
-  } else if (top.type === 'cap') {
-    // Capstone: circle with inner glow
-    const g = document.createElementNS('http://www.w3.org/2000/svg','g');
-    const cy2 = baseY - 16;
-    // Glow filter
-    const defs = document.createElementNS('http://www.w3.org/2000/svg','defs');
-    const filt = document.createElementNS('http://www.w3.org/2000/svg','filter');
-    filt.setAttribute('id', `glow-${i}`);
-    const blur = document.createElementNS('http://www.w3.org/2000/svg','feGaussianBlur');
-    blur.setAttribute('stdDeviation','3'); blur.setAttribute('result','b');
-    const merge = document.createElementNS('http://www.w3.org/2000/svg','feMerge');
-    ['b','SourceGraphic'].forEach(inn => {
-      const n = document.createElementNS('http://www.w3.org/2000/svg','feMergeNode');
-      if (inn==='b') n.setAttribute('in','b'); merge.appendChild(n);
+  for (let i=0; i<N*N; i++) {
+    const col=i%N, row=Math.floor(i/N), px=col*CELL, pz=row*CELL;
+    let yOff=0.055;
+    board[i].pieces.forEach((piece,pi)=>{
+      const r=_makePiece(piece.type,piece.owner,pi===board[i].pieces.length-1); if(!r) return;
+      yOff+=r.halfH; r.mesh.position.set(px,yOff,pz); yOff+=r.halfH;
+      _scene.add(r.mesh); _pieces3D.push(r.mesh);
     });
-    filt.appendChild(blur); filt.appendChild(merge); defs.appendChild(filt);
-    svg.appendChild(defs);
-    // Outer ring glow
-    const glow = document.createElementNS('http://www.w3.org/2000/svg','circle');
-    glow.setAttribute('cx','34'); glow.setAttribute('cy', cy2);
-    glow.setAttribute('r','16'); glow.setAttribute('fill', mainCol); glow.setAttribute('opacity','0.15');
-    g.appendChild(glow);
-    // Body
-    const body = document.createElementNS('http://www.w3.org/2000/svg','circle');
-    body.setAttribute('cx','34'); body.setAttribute('cy', cy2);
-    body.setAttribute('r','13'); body.setAttribute('fill', darkCol);
-    body.setAttribute('stroke', mainCol); body.setAttribute('stroke-width','1.5');
-    body.setAttribute('filter',`url(#glow-${i})`);
-    g.appendChild(body);
-    // Inner dot
-    const dot = document.createElementNS('http://www.w3.org/2000/svg','circle');
-    dot.setAttribute('cx','34'); dot.setAttribute('cy', cy2);
-    dot.setAttribute('r','5'); dot.setAttribute('fill', mainCol); dot.setAttribute('opacity','0.9');
-    g.appendChild(dot);
-    svg.appendChild(g);
+    if (phase==='carry-drop'&&i===carryPos&&carryPieces&&carryPieces.length) {
+      const n=Math.min(carryPieces.length,5);
+      const sg=new THREE.SphereGeometry(0.09,8,6);
+      const sm=new THREE.MeshLambertMaterial({color:0xDAA520,emissive:new THREE.Color(0x553300)});
+      for(let k=0;k<n;k++){
+        const s=new THREE.Mesh(sg,sm), a=(k/n)*Math.PI*2;
+        s.position.set(px+Math.cos(a)*0.24,yOff+0.35+k*0.07,pz+Math.sin(a)*0.24);
+        _scene.add(s); _pieces3D.push(s);
+      }
+    }
   }
-
-  // Stack count badge
-  if (count > 1) {
-    const badge = document.createElementNS('http://www.w3.org/2000/svg','g');
-    const br = document.createElementNS('http://www.w3.org/2000/svg','rect');
-    br.setAttribute('x','47'); br.setAttribute('y','3');
-    br.setAttribute('width','18'); br.setAttribute('height','15');
-    br.setAttribute('rx','4'); br.setAttribute('fill','#0d0d1a');
-    br.setAttribute('stroke', mainCol); br.setAttribute('stroke-width','1');
-    badge.appendChild(br);
-    const bt = document.createElementNS('http://www.w3.org/2000/svg','text');
-    bt.setAttribute('x','56'); bt.setAttribute('y','14');
-    bt.setAttribute('text-anchor','middle'); bt.setAttribute('fill', mainCol);
-    bt.setAttribute('font-size','9'); bt.setAttribute('font-family','Inter,sans-serif');
-    bt.setAttribute('font-weight','600');
-    bt.textContent = count;
-    badge.appendChild(bt);
-    svg.appendChild(badge);
-  }
-
-  // Carry indicator
-  if (phase === 'carry-drop' && i === carryPos && carryPieces && carryPieces.length > 0) {
-    const ind = document.createElementNS('http://www.w3.org/2000/svg','text');
-    ind.setAttribute('x','4'); ind.setAttribute('y','14');
-    ind.setAttribute('fill','#DAA520'); ind.setAttribute('font-size','9');
-    ind.setAttribute('font-family','Inter,sans-serif'); ind.setAttribute('font-weight','600');
-    ind.textContent = `+${carryPieces.length}`;
-    svg.appendChild(ind);
-  }
-
-  return svg;
 }
+
+function buildCellSVG(i) { return null; /* replaced by Three.js renderBoard */ }
+
 
 function renderUI() {
   // Reserves
@@ -928,8 +849,10 @@ function renderUI() {
   });
 }
 
-// ── Coordinates ────────────────────────────────────────────────────
-function buildCoords() {
+// ── Coordinates (no-op in 3D mode) ──────────────────────────────
+function buildCoords() { return; /* 3D scene handles spatial context */
+  // dead code below kept for reference only
+  {  // eslint-disable-line
   const letters = 'ABCDE'.split('');
   const sqW = 74, gap = 3, pad = 3, border = 2;
   const cellW = sqW; // each coord cell
@@ -983,8 +906,8 @@ function toggleRules(who) {
 // ── Boot ───────────────────────────────────────────────────────────
 window.addEventListener('load', () => {
   init();
-  buildCoords();
-  render();
+  initThree();
+  renderUI();
   setMsg("Amber's turn — place a piece or move a stack.");
 });
 
