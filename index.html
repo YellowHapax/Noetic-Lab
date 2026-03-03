@@ -449,10 +449,12 @@
       <div class="dsk-icon-img" style="background:linear-gradient(135deg,#1a0d2a,#0d0818);color:#CE93D8;border:1px solid #3a1a4a;font-family:'JetBrains Mono',monospace;font-size:18px;">∑</div>
       <div class="dsk-icon-label">Formulas</div>
     </div>
+    <!-- Noetica icon hidden while 3D renderer is being fixed
     <div class="dsk-icon" id="dsk-noetica" ondblclick="WM.focus('noetica')" onclick="selectDskIcon('dsk-noetica')">
       <div class="dsk-icon-img" style="background:linear-gradient(135deg,#1a1200,#0d0e00);color:#DAA520;border:1px solid #3a2a00;font-family:'Playfair Display',serif;font-style:italic;font-size:14px;">N</div>
       <div class="dsk-icon-label">Noetica</div>
     </div>
+    -->
   </div>
 </div>
 
@@ -491,11 +493,13 @@
     <div class="dock-label">Formulas</div>
     <div class="dock-dot"></div>
   </div>
+  <!-- Noetica dock item hidden while 3D renderer is being fixed
   <div class="dock-item" id="dock-noetica" onclick="WM.focus('noetica')">
     <div class="dock-icon" style="background: linear-gradient(135deg,#1a1200,#0d0e00); color:#DAA520; border:1px solid #3a2a00; font-family:'Playfair Display',serif; font-style:italic; font-size:18px;">N</div>
     <div class="dock-label">Noetica</div>
     <div class="dock-dot"></div>
   </div>
+  -->
 </div>
 
 <script>
@@ -1089,7 +1093,7 @@ window.addEventListener('load', () => {
   buildStellaWindow();
   buildBetWindow();
   buildFormulasWindow();
-  buildNoeticaWindow();
+  // buildNoeticaWindow();  // hidden while 3D renderer is being fixed
 
   setTimeout(() => { bar.style.width = '100%'; }, 800);
   setTimeout(() => {
