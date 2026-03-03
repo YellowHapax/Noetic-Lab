@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Noetica — Strategy of Roads</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:       #0D0D1A;
+      --surface:  #12121F;
+      --surface2: #1A1A2E;
+      --border:   #2a2a3d;
+      --gold:     #DAA520;
+      --text:     #E8E8F0;
+      --dim:      #8888AA;
+      --a:        #FF7A20;
+      --a-dim:    #7a3a0e;
+      --b:        #00BFFF;
+      --b-dim:    #005f7f;
+      --light-sq: #231a12;
+      --dark-sq:  #16100a;
+      --r: 6px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+    }
+    body { display: flex; flex-direction: column; }
+
+    /* ── Header ── */
+    #hdr {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 7px 14px;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .hdr-title {
+      font-family: 'Playfair Display', serif;
+      font-style: italic; font-size: 17px;
+      color: var(--gold); letter-spacing: 0.03em;
+    }
+    .hdr-sub { font-size: 10px; color: var(--dim); margin-left: 10px; }
+    #turn-pill {
+      padding: 4px 14px; border-radius: 20px; border: 1px solid;
+      font-size: 12px; font-weight: 500;
+      transition: color .3s, border-color .3s, background .3s;
+    }
+    .pill-a { color: var(--a); border-color: var(--a); background: rgba(255,122,32,.08); }
+    .pill-b { color: var(--b); border-color: var(--b); background: rgba(0,191,255,.08); }
+    .btn-sm {
+      padding: 4px 10px; border-radius: var(--r);
+      border: 1px solid var(--border); background: var(--surface2);
+      color: var(--dim); cursor: pointer; font-family: inherit; font-size: 11px;
+      transition: all .15s;
+    }
+    .btn-sm:hover { border-color: var(--gold); color: var(--gold); }
+
+    /* ── Main layout ── */
+    #main {
+      flex: 1; overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+      gap: 16px; padding: 10px;
+    }
+
+    /* ── Player panels ── */
+    .panel {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r); padding: 12px; width: 158px; flex-shrink: 0;
+    }
+    .panel-name {
+      font-size: 11px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: .07em; margin-bottom: 10px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .panel-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .rsv-row {
+      display: flex; align-items: center; gap: 7px;
+      margin-bottom: 7px; font-size: 12px;
+    }
+    .rsv-icon { flex-shrink: 0; }
+    .rsv-n { font-weight: 600; min-width: 18px; }
+    .rsv-lbl { color: var(--dim); font-size: 11px; }
+    hr.panel-hr { border: none; border-top: 1px solid var(--border); margin: 10px 0; }
+
+    /* Action buttons */
+    .act-col { display: flex; flex-direction: column; gap: 5px; }
+    .act-btn {
+      padding: 6px 9px; border-radius: var(--r);
+      border: 1px solid var(--border); background: var(--surface2);
+      color: var(--text); cursor: pointer; font-family: inherit; font-size: 12px;
+      text-align: left; transition: all .15s; display: flex; align-items: center; gap: 6px;
+    }
+    .act-btn:hover:not(:disabled) { border-color: var(--gold); color: var(--gold); }
+    .act-btn:disabled { opacity: .28; cursor: not-allowed; }
+    .act-btn.hi-a { border-color: var(--a); background: rgba(255,122,32,.1); color: var(--a); }
+    .act-btn.hi-b { border-color: var(--b); background: rgba(0,191,255,.1); color: var(--b); }
+    .act-btn.hi-go { border-color: var(--gold); background: rgba(218,165,32,.1); color: var(--gold); }
+
+    /* Carry count selector */
+    .carry-label { font-size: 10px; color: var(--dim); text-transform: uppercase; letter-spacing:.07em; margin-bottom:6px; }
+    .carry-grid { display: flex; flex-wrap: wrap; gap: 4px; }
+    .carry-n {
+      width: 28px; height: 28px; border-radius: 4px;
+      border: 1px solid var(--border); background: var(--surface2);
+      color: var(--text); cursor: pointer; font-family: inherit; font-size: 12px;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .15s;
+    }
+    .carry-n:hover { border-color: var(--gold); color: var(--gold); }
+
+    /* Drop-all button */
+    .drop-all-btn {
+      margin-top: 6px; padding: 5px 8px;
+      border-radius: var(--r); border: 1px solid var(--border);
+      background: var(--surface2); color: var(--dim);
+      cursor: pointer; font-family: inherit; font-size: 11px;
+      width: 100%; text-align: center; transition: all .15s;
+    }
+    .drop-all-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+    /* Cancel */
+    .cancel-btn {
+      margin-top: 8px; padding: 4px 8px;
+      border-radius: var(--r); border: 1px solid var(--border);
+      background: transparent; color: var(--dim);
+      cursor: pointer; font-family: inherit; font-size: 11px;
+      width: 100%; text-align: center; transition: all .15s;
+    }
+    .cancel-btn:hover { border-color: #ff6060; color: #ff6060; }
+
+    /* ── Board ── */
+    #board-area { display: flex; flex-direction: column; align-items: center; gap: 4px; flex-shrink: 0; }
+    .coord-row { display: flex; align-items: center; padding: 0 2px; }
+    .c-corner { width: 20px; }
+    .c-lbl {
+      font-size: 9px; color: var(--dim); text-align: center;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .board-mid { display: flex; gap: 4px; }
+    .coord-col { display: flex; flex-direction: column; padding: 2px 0; }
+    #board {
+      display: grid; grid-template-columns: repeat(5, 1fr);
+      gap: 3px; background: #060408;
+      border: 2px solid #3a2510; border-radius: 4px; padding: 3px;
+    }
+    .cell {
+      width: 74px; height: 74px; border-radius: 3px;
+      position: relative; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: box-shadow .12s, opacity .12s;
+    }
+    .cell.light { background: var(--light-sq); }
+    .cell.dark  { background: var(--dark-sq); }
+    /* Phase hints */
+    .cell.valid   { box-shadow: inset 0 0 0 2px rgba(218,165,32,.7); }
+    .cell.blocked { opacity: .45; cursor: not-allowed; }
+    .cell.from    { box-shadow: inset 0 0 0 2px #fff4; background: rgba(255,255,255,.04); }
+    .cell.current { box-shadow: inset 0 0 0 2px rgba(218,165,32,1), 0 0 8px rgba(218,165,32,.3); }
+    /* Win road */
+    .cell.road-a  { box-shadow: inset 0 0 0 2px var(--a), 0 0 10px rgba(255,122,32,.35); }
+    .cell.road-b  { box-shadow: inset 0 0 0 2px var(--b), 0 0 10px rgba(0,191,255,.35); }
+
+    /* ── Message bar ── */
+    #msg {
+      flex-shrink: 0; padding: 5px 14px;
+      background: var(--surface2); border-top: 1px solid var(--border);
+      font-size: 11px; color: var(--dim); min-height: 26px;
+      display: flex; align-items: center;
+    }
+
+    /* ── Win overlay ── */
+    #overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.72); z-index: 99;
+      align-items: center; justify-content: center;
+    }
+    #overlay.show { display: flex; }
+    .over-box {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 38px 56px; text-align: center;
+      box-shadow: 0 24px 60px rgba(0,0,0,.8);
+    }
+    .over-title {
+      font-family: 'Playfair Display', serif;
+      font-style: italic; font-size: 26px; margin-bottom: 6px;
+    }
+    .over-sub { color: var(--dim); margin-bottom: 22px; font-size: 12px; }
+    .over-btn {
+      padding: 9px 28px; border-radius: var(--r);
+      border: 1px solid var(--gold); background: var(--surface2);
+      color: var(--gold); cursor: pointer; font-family: inherit; font-size: 13px;
+      transition: background .15s;
+    }
+    .over-btn:hover { background: rgba(218,165,32,.12); }
+
+    /* Rules panel */
+    .rules-section { margin-top: 8px; }
+    .rules-btn {
+      font-size: 10px; color: var(--dim); background: none; border: none;
+      cursor: pointer; font-family: inherit; text-decoration: underline;
+      padding: 2px 0; display: block; width: 100%;
+    }
+    .rules-body {
+      display: none; margin-top: 6px; font-size: 10px; color: var(--dim);
+      line-height: 1.6; border-top: 1px solid var(--border); padding-top: 6px;
+    }
+    .rules-body.open { display: block; }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<div id="hdr">
+  <div style="display:flex;align-items:baseline;gap:0">
+    <span class="hdr-title">Noetica</span>
+    <span class="hdr-sub">— Strategy of Roads</span>
+  </div>
+  <div id="turn-pill" class="pill-a">● Amber</div>
+  <button class="btn-sm" onclick="restartGame()">↺ New Game</button>
+</div>
+
+<!-- Main -->
+<div id="main">
+
+  <!-- Panel A -->
+  <div class="panel" id="panel-a">
+    <div class="panel-name">
+      <div class="panel-dot" style="background:var(--a)"></div>
+      <span style="color:var(--a)">Amber</span>
+    </div>
+    <div class="rsv-row">
+      <svg class="rsv-icon" width="18" height="10" viewBox="0 0 18 10">
+        <rect x="1" y="2" width="16" height="7" rx="1.5" fill="var(--a-dim)" stroke="var(--a)" stroke-width="1.2"/>
+      </svg>
+      <span class="rsv-n" id="a-stones">21</span>
+      <span class="rsv-lbl">stones</span>
+    </div>
+    <div class="rsv-row">
+      <svg class="rsv-icon" width="18" height="18" viewBox="0 0 18 18">
+        <circle cx="9" cy="9" r="7" fill="var(--a-dim)" stroke="var(--a)" stroke-width="1.2"/>
+        <circle cx="9" cy="9" r="3" fill="var(--a)" opacity=".7"/>
+      </svg>
+      <span class="rsv-n" id="a-cap">1</span>
+      <span class="rsv-lbl">capstone</span>
+    </div>
+    <hr class="panel-hr">
+    <div id="a-actions"><!-- filled by renderUI --></div>
+    <div class="rules-section">
+      <button class="rules-btn" onclick="toggleRules('a')">? rules</button>
+      <div class="rules-body" id="rules-a">
+        <b>Roads win.</b> Connect edge to edge with a chain of your <em>lands</em> or <em>cap</em> on top.<br><br>
+        <b>Place:</b> Put a stone (flat or standing wall) or your capstone on any empty square.<br><br>
+        <b>Move:</b> Carry 1–5 pieces from a stack you control. Move in one direction, drop at least 1 per square.<br><br>
+        <b>Walls</b> block roads. <b>Caps</b> flatten walls when moved onto them.
+      </div>
+    </div>
+  </div>
+
+  <!-- Board -->
+  <div id="board-area">
+    <div class="coord-row" id="coord-top"></div>
+    <div class="board-mid">
+      <div class="coord-col" id="coord-left"></div>
+      <div id="board"></div>
+      <div class="coord-col" id="coord-right"></div>
+    </div>
+    <div class="coord-row" id="coord-bot"></div>
+  </div>
+
+  <!-- Panel B -->
+  <div class="panel" id="panel-b">
+    <div class="panel-name">
+      <div class="panel-dot" style="background:var(--b)"></div>
+      <span style="color:var(--b)">Cobalt</span>
+    </div>
+    <div class="rsv-row">
+      <svg class="rsv-icon" width="18" height="10" viewBox="0 0 18 10">
+        <rect x="1" y="2" width="16" height="7" rx="1.5" fill="var(--b-dim)" stroke="var(--b)" stroke-width="1.2"/>
+      </svg>
+      <span class="rsv-n" id="b-stones">21</span>
+      <span class="rsv-lbl">stones</span>
+    </div>
+    <div class="rsv-row">
+      <svg class="rsv-icon" width="18" height="18" viewBox="0 0 18 18">
+        <circle cx="9" cy="9" r="7" fill="var(--b-dim)" stroke="var(--b)" stroke-width="1.2"/>
+        <circle cx="9" cy="9" r="3" fill="var(--b)" opacity=".7"/>
+      </svg>
+      <span class="rsv-n" id="b-cap">1</span>
+      <span class="rsv-lbl">capstone</span>
+    </div>
+    <hr class="panel-hr">
+    <div id="b-actions"><!-- filled by renderUI --></div>
+    <div class="rules-section">
+      <button class="rules-btn" onclick="toggleRules('b')">? rules</button>
+      <div class="rules-body" id="rules-b">
+        <b>Roads win.</b> Connect edge to edge with a chain of your <em>lands</em> or <em>cap</em> on top.<br><br>
+        <b>Place:</b> Put a stone (flat or standing wall) or your capstone on any empty square.<br><br>
+        <b>Move:</b> Carry 1–5 pieces from a stack you control. Move in one direction, drop at least 1 per square.<br><br>
+        <b>Walls</b> block roads. <b>Caps</b> flatten walls when moved onto them.
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Message bar -->
+<div id="msg">Amber's turn — place a piece or move a stack.</div>
+
+<!-- Win overlay -->
+<div id="overlay">
+  <div class="over-box">
+    <div class="over-title" id="over-title">Amber wins!</div>
+    <div class="over-sub" id="over-sub">Road complete — edge to edge.</div>
+    <button class="over-btn" onclick="restartGame()">Play Again</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+const N = 5;
+
+// ── State ────────────────────────────────────────────────────────
+let board;      // Array(25): each is {pieces: [{owner:0|1, type:'land'|'wall'|'cap'}]}
+let reserves;   // [{stones,cap}, {stones,cap}]
+let turn;       // 0 | 1
+let phase;      // 'idle' | 'placing' | 'carry-select' | 'carry-count' | 'carry-drop'
+let placeType;  // 'land'|'wall'|'cap'
+let carryOrigin, carryPieces, carryDir, carryPos;
+let winRoad;    // Set of cell indices
+
+function init() {
+  board    = Array.from({length:N*N}, () => ({pieces:[]}));
+  reserves = [{stones:21, cap:1}, {stones:21, cap:1}];
+  turn = 0;
+  phase = 'idle';
+  placeType = null;
+  carryOrigin = carryPieces = carryDir = carryPos = null;
+  winRoad = null;
+}
+
+// ── Index helpers ────────────────────────────────────────────────
+const cx = i => i % N;
+const cy = i => Math.floor(i / N);
+const ci = (x,y) => y * N + x;
+const inBounds = (x,y) => x >= 0 && x < N && y >= 0 && y < N;
+
+function topPiece(i) {
+  const p = board[i].pieces;
+  return p.length ? p[p.length-1] : null;
+}
+function stackHeight(i) { return board[i].pieces.length; }
+
+// Can a moving stack land on cell i?
+// carryHasCap: boolean — topmost carried piece is a cap
+// Returns: 'free' | 'flatten' | 'blocked'
+function landability(i, carryHasCap) {
+  const top = topPiece(i);
+  if (!top) return 'free';
+  if (top.type === 'cap') return 'blocked';
+  if (top.type === 'wall') return carryHasCap ? 'flatten' : 'blocked';
+  return 'free';
+}
+
+// ── Win detection ────────────────────────────────────────────────
+function isRoadCell(i, player) {
+  const top = topPiece(i);
+  return top && top.owner === player && (top.type === 'land' || top.type === 'cap');
+}
+
+function findRoad(player) {
+  // North-South: y=0 → y=N-1
+  const ns = bfs(player,
+    Array.from({length:N}, (_,x) => ci(x,0)).filter(i => isRoadCell(i,player)),
+    i => cy(i) === N-1
+  );
+  if (ns) return ns;
+  // East-West: x=0 → x=N-1
+  return bfs(player,
+    Array.from({length:N}, (_,y) => ci(0,y)).filter(i => isRoadCell(i,player)),
+    i => cx(i) === N-1
+  );
+}
+
+function bfs(player, starts, isGoal) {
+  if (!starts.length) return null;
+  const visited = new Set(starts);
+  const prev = new Map(starts.map(s => [s,-1]));
+  const queue = [...starts];
+  let goal = -1;
+  while (queue.length && goal === -1) {
+    const c = queue.shift();
+    if (isGoal(c)) { goal = c; break; }
+    for (const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
+      const nx = cx(c)+dx, ny = cy(c)+dy;
+      if (!inBounds(nx,ny)) continue;
+      const ni = ci(nx,ny);
+      if (!visited.has(ni) && isRoadCell(ni,player)) {
+        visited.add(ni); prev.set(ni,c); queue.push(ni);
+      }
+    }
+  }
+  if (goal === -1) return null;
+  const path = new Set();
+  let c = goal;
+  while (c !== -1) { path.add(c); c = prev.get(c); }
+  return path;
+}
+
+// ── Valid next squares during carry ─────────────────────────────
+function validDropSquares() {
+  if (phase !== 'carry-drop' || !carryPieces.length) return [];
+  const hasCap = carryPieces.some(p => p.type === 'cap');
+  const results = [];
+  for (const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
+    if (carryDir !== null) {
+      const fixedDir = [[1,0],[-1,0],[0,1],[0,-1]][carryDir];
+      if (dx !== fixedDir[0] || dy !== fixedDir[1]) continue;
+    }
+    const nx = cx(carryPos)+dx, ny = cy(carryPos)+dy;
+    if (!inBounds(nx,ny)) continue;
+    const ni = ci(nx,ny);
+    if (landability(ni, hasCap) !== 'blocked') results.push(ni);
+  }
+  return results;
+}
+
+// ── Phase actions ────────────────────────────────────────────────
+function doStartPlace(type) {
+  if (phase !== 'idle') return;
+  if ((type === 'land'||type === 'wall') && reserves[turn].stones <= 0) return;
+  if (type === 'cap' && reserves[turn].cap <= 0) return;
+  phase = 'placing';
+  placeType = type;
+  render();
+  setMsg(`Click an empty square to place a ${type === 'cap' ? 'capstone' : type === 'wall' ? 'wall stone' : 'land stone'}.`);
+}
+
+function doStartMove() {
+  if (phase !== 'idle') return;
+  const hasAny = board.some((cell,i) => { const t = topPiece(i); return t && t.owner === turn; });
+  if (!hasAny) { setMsg('No stacks to move!'); return; }
+  phase = 'carry-select';
+  render();
+  setMsg('Click a square where your piece is on top.');
+}
+
+function doCancel() {
+  phase = 'idle';
+  placeType = carryOrigin = carryPieces = carryDir = carryPos = null;
+  render();
+  setMsg(`${turn===0?'Amber':'Cobalt'}'s turn — place a piece or move a stack.`);
+}
+
+function doChooseCarry(count) {
+  if (phase !== 'carry-count') return;
+  const pieces = board[carryOrigin].pieces;
+  carryPieces = pieces.splice(pieces.length - count, count); // top N
+  carryPos = carryOrigin;
+  carryDir = null;
+  phase = 'carry-drop';
+  render();
+  setMsg(`Carrying ${carryPieces.length}. Click an adjacent square to drop one. Or drop all here.`);
+}
+
+function doDropAll(targetCell) {
+  // Drop all remaining pieces at carryPos (or at targetCell if provided)
+  const dest = (targetCell !== undefined) ? targetCell : carryPos;
+  if (dest === null) return;
+  // First drop must not be on origin if we haven't moved yet
+  if (dest === carryOrigin && carryDir === null && carryPieces.length > 0) {
+    // That would mean the piece never moved — not allowed for a move action
+    setMsg('You must move at least one square. Drop on a different square.');
+    return;
+  }
+  const hasCap = carryPieces[carryPieces.length-1]?.type === 'cap';
+  const landing = landability(dest, hasCap);
+  if (landing === 'blocked') { setMsg('Cannot drop there.'); return; }
+  if (landing === 'flatten') {
+    // Flatten the wall
+    const wall = board[dest].pieces.find((p,j,arr) => j===arr.length-1 && p.type==='wall');
+    if (wall) wall.type = 'land';
+  }
+  while (carryPieces.length > 0) {
+    board[dest].pieces.push(carryPieces.shift());  // bottom first → original top ends on top
+  }
+  endMove();
+}
+
+function endMove() {
+  const road = findRoad(turn);
+  if (road) { winRoad = road; render(); showWin(turn); return; }
+  // Also check if the OTHER player just got a road (shouldn't happen on your move, but safety)
+  nextTurn();
+}
+
+function doPlaceAt(i) {
+  const top = topPiece(i);
+  if (top) { setMsg('That square is occupied.'); return; }
+  const piece = {owner: turn, type: placeType};
+  board[i].pieces.push(piece);
+  if (placeType === 'cap') reserves[turn].cap--;
+  else reserves[turn].stones--;
+  const road = findRoad(turn);
+  if (road) { winRoad = road; render(); showWin(turn); return; }
+  nextTurn();
+}
+
+// Drop one piece at cell i — bottommost carried piece drops first (shift)
+function dropOneAt(i) {
+  if (!carryPieces.length) return;
+  // Set direction on first drop
+  if (carryDir === null) {
+    const dx = cx(i)-cx(carryPos), dy = cy(i)-cy(carryPos);
+    const allDirs = [[1,0],[-1,0],[0,1],[0,-1]];
+    carryDir = allDirs.findIndex(([a,b]) => a===dx && b===dy);
+  }
+  const hasCap = carryPieces.some(p => p.type === 'cap');
+  const landing = landability(i, hasCap);
+  if (landing === 'flatten') {
+    const top = board[i].pieces[board[i].pieces.length-1];
+    if (top && top.type === 'wall') top.type = 'land';
+  }
+  const piece = carryPieces.shift();  // drop bottommost first; original top lands furthest
+  board[i].pieces.push(piece);
+  carryPos = i;
+
+  if (carryPieces.length === 0) {
+    // Done carrying
+    const road = findRoad(turn);
+    if (road) { winRoad = road; render(); showWin(turn); return; }
+    nextTurn();
+    return;
+  }
+  // Check if we can continue
+  const nexts = validDropSquares();
+  if (nexts.length === 0) {
+    // Force drop all remaining here
+    while (carryPieces.length) board[i].pieces.push(carryPieces.pop());
+    const road = findRoad(turn);
+    if (road) { winRoad = road; render(); showWin(turn); return; }
+    nextTurn();
+    return;
+  }
+  render();
+  setMsg(`Carrying ${carryPieces.length} more. Drop one on the next square, or drop all here.`);
+}
+
+// ── Cell click dispatcher ─────────────────────────────────────────
+function onCellClick(i) {
+  if (winRoad) return;
+  switch (phase) {
+    case 'idle': break;
+    case 'placing': {
+      if (topPiece(i)) { setMsg('That square is occupied.'); return; }
+      doPlaceAt(i);
+      break;
+    }
+    case 'carry-select': {
+      const top = topPiece(i);
+      if (!top || top.owner !== turn) { setMsg('Pick a square where your top piece is yours.'); return; }
+      if (stackHeight(i) === 0) return;
+      carryOrigin = i;
+      phase = 'carry-count';
+      render();
+      const max = Math.min(stackHeight(i), N);
+      setMsg(`Carry how many pieces? (1–${max})`);
+      break;
+    }
+    case 'carry-count': {
+      if (i === carryOrigin) { doCancel(); }
+      break;
+    }
+    case 'carry-drop': {
+      if (i === carryPos) {
+        // Drop all remaining here (if not still at origin)
+        if (i === carryOrigin && carryDir === null) {
+          setMsg('Move at least one square first.');
+          return;
+        }
+        doDropAll(i);
+        return;
+      }
+      const valids = validDropSquares();
+      if (!valids.includes(i)) { setMsg('Not a valid drop square.'); return; }
+      dropOneAt(i);
+      break;
+    }
+  }
+}
+
+// ── Turn management ───────────────────────────────────────────────
+function nextTurn() {
+  turn = 1 - turn;
+  phase = 'idle';
+  placeType = carryOrigin = carryPieces = carryDir = carryPos = null;
+  render();
+  setMsg(`${turn===0?'Amber':'Cobalt'}'s turn — place a piece or move a stack.`);
+}
+
+// ── Win ───────────────────────────────────────────────────────────
+function showWin(player) {
+  const name = player===0 ? 'Amber' : 'Cobalt';
+  const color = player===0 ? 'var(--a)' : 'var(--b)';
+  document.getElementById('over-title').style.color = color;
+  document.getElementById('over-title').textContent = `${name} wins!`;
+  document.getElementById('over-sub').textContent = 'Road complete — edge to edge.';
+  document.getElementById('overlay').classList.add('show');
+  setMsg(`${name} has completed a road!`);
+}
+
+function restartGame() {
+  document.getElementById('overlay').classList.remove('show');
+  init();
+  buildCoords();
+  render();
+  setMsg("Amber's turn — place a piece or move a stack.");
+}
+
+// ── Rendering ─────────────────────────────────────────────────────
+function render() {
+  renderBoard();
+  renderUI();
+}
+
+function renderBoard() {
+  const boardEl = document.getElementById('board');
+  boardEl.innerHTML = '';
+  const valids = phase === 'carry-drop' ? validDropSquares() : [];
+
+  for (let i = 0; i < N*N; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'cell ' + ((cx(i)+cy(i))%2===0 ? 'light' : 'dark');
+    cell.dataset.i = i;
+    cell.onclick = () => onCellClick(i);
+
+    // Phase-based cell classes
+    if (winRoad) {
+      if (winRoad.has(i)) cell.classList.add(turn===0 ? 'road-a' : 'road-b');
+    } else if (phase === 'placing') {
+      cell.classList.add(topPiece(i) ? 'blocked' : 'valid');
+    } else if (phase === 'carry-select') {
+      const top = topPiece(i);
+      cell.classList.add((top && top.owner===turn) ? 'valid' : 'blocked');
+    } else if (phase === 'carry-count') {
+      cell.classList.add(i === carryOrigin ? 'from' : 'blocked');
+    } else if (phase === 'carry-drop') {
+      if (i === carryOrigin) cell.classList.add('from');
+      else if (i === carryPos) cell.classList.add('current');
+      else if (valids.includes(i)) cell.classList.add('valid');
+      else cell.classList.add('blocked');
+    }
+
+    cell.appendChild(buildCellSVG(i));
+    boardEl.appendChild(cell);
+  }
+}
+
+function buildCellSVG(i) {
+  const pieces = board[i].pieces;
+  const W = 68, H = 68;
+  const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.setAttribute('width', W); svg.setAttribute('height', H);
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.style.overflow = 'visible';
+
+  if (!pieces.length) return svg;
+  const count = pieces.length;
+
+  // Draw lower layers as thin slivers
+  const sliverH = 5, sliverGap = 3;
+  for (let k = 0; k < Math.min(count-1, 5); k++) {
+    const p = pieces[k];
+    const col = p.owner===0 ? '#FF7A20' : '#00BFFF';
+    const dimCol = p.owner===0 ? '#7a3a0e' : '#005f7f';
+    const y = H - 14 - k*(sliverH+sliverGap-1);
+    const rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
+    rect.setAttribute('x','7'); rect.setAttribute('y', y);
+    rect.setAttribute('width','54'); rect.setAttribute('height',sliverH);
+    rect.setAttribute('rx','1.5');
+    rect.setAttribute('fill', dimCol);
+    rect.setAttribute('stroke', col); rect.setAttribute('stroke-width','0.8');
+    rect.setAttribute('opacity','0.65');
+    svg.appendChild(rect);
+  }
+
+  // Draw top piece
+  const top = pieces[count-1];
+  const mainCol  = top.owner===0 ? '#FF7A20' : '#00BFFF';
+  const darkCol  = top.owner===0 ? '#7a3a0e' : '#005070';
+  const lightCol = top.owner===0 ? '#ffac70' : '#70deff';
+  const baseY = H - 14 - Math.min(count-1,5)*(sliverH+sliverGap-1);
+
+  if (top.type === 'land') {
+    // Flat stone: wide, low rectangle
+    const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+    // Shadow
+    const sh = document.createElementNS('http://www.w3.org/2000/svg','rect');
+    sh.setAttribute('x','10'); sh.setAttribute('y', baseY-9);
+    sh.setAttribute('width','50'); sh.setAttribute('height','12');
+    sh.setAttribute('rx','3'); sh.setAttribute('fill','#000'); sh.setAttribute('opacity','0.3');
+    g.appendChild(sh);
+    // Body
+    const body = document.createElementNS('http://www.w3.org/2000/svg','rect');
+    body.setAttribute('x','8'); body.setAttribute('y', baseY-11);
+    body.setAttribute('width','52'); body.setAttribute('height','12');
+    body.setAttribute('rx','3'); body.setAttribute('fill', darkCol);
+    body.setAttribute('stroke', mainCol); body.setAttribute('stroke-width','1.5');
+    g.appendChild(body);
+    // Highlight
+    const hl = document.createElementNS('http://www.w3.org/2000/svg','rect');
+    hl.setAttribute('x','12'); hl.setAttribute('y', baseY-9);
+    hl.setAttribute('width','8'); hl.setAttribute('height','4');
+    hl.setAttribute('rx','1'); hl.setAttribute('fill', lightCol); hl.setAttribute('opacity','0.5');
+    g.appendChild(hl);
+    svg.appendChild(g);
+
+  } else if (top.type === 'wall') {
+    // Standing wall: tall thin rectangle
+    const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+    const wallH = 36;
+    const wallTop = baseY - wallH;
+    // Shadow
+    const sh = document.createElementNS('http://www.w3.org/2000/svg','rect');
+    sh.setAttribute('x','30'); sh.setAttribute('y', wallTop+2);
+    sh.setAttribute('width','16'); sh.setAttribute('height', wallH);
+    sh.setAttribute('rx','2'); sh.setAttribute('fill','#000'); sh.setAttribute('opacity','0.3');
+    g.appendChild(sh);
+    // Body
+    const body = document.createElementNS('http://www.w3.org/2000/svg','rect');
+    body.setAttribute('x','26'); body.setAttribute('y', wallTop);
+    body.setAttribute('width','16'); body.setAttribute('height', wallH);
+    body.setAttribute('rx','2'); body.setAttribute('fill', darkCol);
+    body.setAttribute('stroke', mainCol); body.setAttribute('stroke-width','1.5');
+    g.appendChild(body);
+    // Highlight
+    const hl = document.createElementNS('http://www.w3.org/2000/svg','rect');
+    hl.setAttribute('x','29'); hl.setAttribute('y', wallTop+4);
+    hl.setAttribute('width','4'); hl.setAttribute('height','10');
+    hl.setAttribute('rx','1'); hl.setAttribute('fill', lightCol); hl.setAttribute('opacity','0.5');
+    g.appendChild(hl);
+    svg.appendChild(g);
+
+  } else if (top.type === 'cap') {
+    // Capstone: circle with inner glow
+    const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+    const cy2 = baseY - 16;
+    // Glow filter
+    const defs = document.createElementNS('http://www.w3.org/2000/svg','defs');
+    const filt = document.createElementNS('http://www.w3.org/2000/svg','filter');
+    filt.setAttribute('id', `glow-${i}`);
+    const blur = document.createElementNS('http://www.w3.org/2000/svg','feGaussianBlur');
+    blur.setAttribute('stdDeviation','3'); blur.setAttribute('result','b');
+    const merge = document.createElementNS('http://www.w3.org/2000/svg','feMerge');
+    ['b','SourceGraphic'].forEach(inn => {
+      const n = document.createElementNS('http://www.w3.org/2000/svg','feMergeNode');
+      if (inn==='b') n.setAttribute('in','b'); merge.appendChild(n);
+    });
+    filt.appendChild(blur); filt.appendChild(merge); defs.appendChild(filt);
+    svg.appendChild(defs);
+    // Outer ring glow
+    const glow = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    glow.setAttribute('cx','34'); glow.setAttribute('cy', cy2);
+    glow.setAttribute('r','16'); glow.setAttribute('fill', mainCol); glow.setAttribute('opacity','0.15');
+    g.appendChild(glow);
+    // Body
+    const body = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    body.setAttribute('cx','34'); body.setAttribute('cy', cy2);
+    body.setAttribute('r','13'); body.setAttribute('fill', darkCol);
+    body.setAttribute('stroke', mainCol); body.setAttribute('stroke-width','1.5');
+    body.setAttribute('filter',`url(#glow-${i})`);
+    g.appendChild(body);
+    // Inner dot
+    const dot = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    dot.setAttribute('cx','34'); dot.setAttribute('cy', cy2);
+    dot.setAttribute('r','5'); dot.setAttribute('fill', mainCol); dot.setAttribute('opacity','0.9');
+    g.appendChild(dot);
+    svg.appendChild(g);
+  }
+
+  // Stack count badge
+  if (count > 1) {
+    const badge = document.createElementNS('http://www.w3.org/2000/svg','g');
+    const br = document.createElementNS('http://www.w3.org/2000/svg','rect');
+    br.setAttribute('x','47'); br.setAttribute('y','3');
+    br.setAttribute('width','18'); br.setAttribute('height','15');
+    br.setAttribute('rx','4'); br.setAttribute('fill','#0d0d1a');
+    br.setAttribute('stroke', mainCol); br.setAttribute('stroke-width','1');
+    badge.appendChild(br);
+    const bt = document.createElementNS('http://www.w3.org/2000/svg','text');
+    bt.setAttribute('x','56'); bt.setAttribute('y','14');
+    bt.setAttribute('text-anchor','middle'); bt.setAttribute('fill', mainCol);
+    bt.setAttribute('font-size','9'); bt.setAttribute('font-family','Inter,sans-serif');
+    bt.setAttribute('font-weight','600');
+    bt.textContent = count;
+    badge.appendChild(bt);
+    svg.appendChild(badge);
+  }
+
+  // Carry indicator
+  if (phase === 'carry-drop' && i === carryPos && carryPieces && carryPieces.length > 0) {
+    const ind = document.createElementNS('http://www.w3.org/2000/svg','text');
+    ind.setAttribute('x','4'); ind.setAttribute('y','14');
+    ind.setAttribute('fill','#DAA520'); ind.setAttribute('font-size','9');
+    ind.setAttribute('font-family','Inter,sans-serif'); ind.setAttribute('font-weight','600');
+    ind.textContent = `+${carryPieces.length}`;
+    svg.appendChild(ind);
+  }
+
+  return svg;
+}
+
+function renderUI() {
+  // Reserves
+  document.getElementById('a-stones').textContent = reserves[0].stones;
+  document.getElementById('a-cap').textContent    = reserves[0].cap;
+  document.getElementById('b-stones').textContent = reserves[1].stones;
+  document.getElementById('b-cap').textContent    = reserves[1].cap;
+
+  // Turn pill
+  const pill = document.getElementById('turn-pill');
+  pill.textContent = `● ${turn===0?'Amber':'Cobalt'}`;
+  pill.className = turn===0 ? 'pill-a' : 'pill-b';
+
+  // Action area for each player
+  ['a','b'].forEach(who => {
+    const p = who==='a' ? 0 : 1;
+    const el = document.getElementById(`${who}-actions`);
+    el.innerHTML = '';
+    const isActive = turn === p;
+    const hiClass = p===0 ? 'hi-a' : 'hi-b';
+
+    if (isActive) {
+      if (phase === 'idle') {
+        const col = document.createElement('div');
+        col.className = 'act-col';
+        const btns = [
+          {label:'⬜ Place Land',   fn:`doStartPlace('land')`,  disabled: reserves[p].stones<=0},
+          {label:'◫ Place Wall',   fn:`doStartPlace('wall')`,  disabled: reserves[p].stones<=0},
+          {label:'◉ Place Cap',    fn:`doStartPlace('cap')`,   disabled: reserves[p].cap<=0},
+          {label:'↕ Move Stack',   fn:`doStartMove()`,          disabled: false},
+        ];
+        btns.forEach(({label,fn,disabled}) => {
+          const b = document.createElement('button');
+          b.className = 'act-btn'; b.innerHTML = label;
+          b.disabled = disabled;
+          b.onclick = () => eval(fn);
+          col.appendChild(b);
+        });
+        el.appendChild(col);
+      } else if (phase === 'placing') {
+        const col = document.createElement('div'); col.className = 'act-col';
+        const types = {land:'⬜ Place Land', wall:'◫ Place Wall', cap:'◉ Place Cap'};
+        Object.entries(types).forEach(([t,lbl]) => {
+          const b = document.createElement('button');
+          b.className = 'act-btn' + (t===placeType ? ` ${hiClass}` : '');
+          b.innerHTML = lbl; b.disabled = (t!==placeType);
+          b.title = t === placeType ? 'Click board square' : '';
+          col.appendChild(b);
+        });
+        const cancel = document.createElement('button');
+        cancel.className = 'cancel-btn'; cancel.textContent = '✕ Cancel';
+        cancel.onclick = doCancel; col.appendChild(cancel);
+        el.appendChild(col);
+      } else if (phase === 'carry-select') {
+        const col = document.createElement('div'); col.className = 'act-col';
+        const lbl = document.createElement('div');
+        lbl.className = 'carry-label'; lbl.textContent = 'Select a stack:';
+        col.appendChild(lbl);
+        const b = document.createElement('button');
+        b.className = `act-btn ${hiClass}`; b.innerHTML = '↕ Move Stack';
+        col.appendChild(b);
+        const cancel = document.createElement('button');
+        cancel.className = 'cancel-btn'; cancel.textContent = '✕ Cancel';
+        cancel.onclick = doCancel; col.appendChild(cancel);
+        el.appendChild(col);
+      } else if (phase === 'carry-count') {
+        const max = Math.min(stackHeight(carryOrigin), N);
+        const lbl = document.createElement('div');
+        lbl.className = 'carry-label'; lbl.textContent = 'Carry how many?';
+        el.appendChild(lbl);
+        const grid = document.createElement('div'); grid.className = 'carry-grid';
+        for (let k=1; k<=max; k++) {
+          const b = document.createElement('button');
+          b.className = 'carry-n'; b.textContent = k;
+          const _k = k;
+          b.onclick = () => doChooseCarry(_k);
+          grid.appendChild(b);
+        }
+        el.appendChild(grid);
+        const cancel = document.createElement('button');
+        cancel.className = 'cancel-btn'; cancel.textContent = '✕ Cancel';
+        cancel.onclick = doCancel; el.appendChild(cancel);
+      } else if (phase === 'carry-drop') {
+        const lbl = document.createElement('div');
+        lbl.className = 'carry-label';
+        lbl.textContent = `Carrying: ${carryPieces ? carryPieces.length : 0}`;
+        el.appendChild(lbl);
+        const dropAll = document.createElement('button');
+        dropAll.className = 'drop-all-btn';
+        dropAll.textContent = `⬇ Drop all here (${carryPieces ? carryPieces.length : 0})`;
+        dropAll.disabled = (carryPos === carryOrigin && carryDir === null);
+        dropAll.onclick = () => doDropAll(carryPos);
+        el.appendChild(dropAll);
+        const cancel = document.createElement('button');
+        cancel.className = 'cancel-btn'; cancel.textContent = '✕ Cancel move';
+        cancel.onclick = () => {
+          // Restore pieces to origin
+          const orig = board[carryOrigin];
+          while(carryPieces && carryPieces.length) orig.pieces.push(carryPieces.shift());
+          doCancel();
+        };
+        el.appendChild(cancel);
+      }
+    } else {
+      // Inactive player — just show waiting
+      const d = document.createElement('div');
+      d.style.cssText = 'font-size:11px;color:var(--dim);margin-top:4px;';
+      d.textContent = phase !== 'idle' ? '…opponent is moving' : 'Waiting…';
+      el.appendChild(d);
+    }
+  });
+}
+
+// ── Coordinates ────────────────────────────────────────────────────
+function buildCoords() {
+  const letters = 'ABCDE'.split('');
+  const sqW = 74, gap = 3, pad = 3, border = 2;
+  const cellW = sqW; // each coord cell
+  ['coord-top','coord-bot'].forEach(id => {
+    const el = document.getElementById(id);
+    el.innerHTML = '';
+    // corner spacer
+    const corner = document.createElement('div');
+    corner.style.cssText = `width:20px;flex-shrink:0;`;
+    el.appendChild(corner);
+    letters.forEach(l => {
+      const d = document.createElement('div');
+      d.className = 'c-lbl';
+      d.style.cssText = `width:${cellW}px;text-align:center;`;
+      d.textContent = l;
+      el.appendChild(d);
+      // gap
+      const g = document.createElement('div');
+      g.style.cssText = `width:${gap}px;flex-shrink:0;`;
+      if (letters.indexOf(l) < 4) el.appendChild(g);
+    });
+    el.style.cssText = `display:flex;align-items:center;padding:0 ${pad+border+1}px 0 0;gap:0;`;
+  });
+  ['coord-left','coord-right'].forEach(id => {
+    const el = document.getElementById(id);
+    el.innerHTML = '';
+    for (let y=0; y<N; y++) {
+      const d = document.createElement('div');
+      d.className = 'c-lbl';
+      d.style.cssText = `height:${cellW}px;display:flex;align-items:center;` +
+        (id==='coord-left' ? 'padding-right:4px;justify-content:flex-end;' : 'padding-left:4px;');
+      d.textContent = N - y;
+      el.appendChild(d);
+      if (y < N-1) {
+        const g = document.createElement('div');
+        g.style.cssText = `height:${gap}px;`;
+        el.appendChild(g);
+      }
+    }
+  });
+}
+
+// ── Misc helpers ───────────────────────────────────────────────────
+function setMsg(txt) { document.getElementById('msg').textContent = txt; }
+
+function toggleRules(who) {
+  const el = document.getElementById(`rules-${who}`);
+  el.classList.toggle('open');
+}
+
+// ── Boot ───────────────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  init();
+  buildCoords();
+  render();
+  setMsg("Amber's turn — place a piece or move a stack.");
+});
+
+// Expose for inline onclick
+window.doStartPlace = doStartPlace;
+window.doStartMove  = doStartMove;
+window.doCancel     = doCancel;
+window.doChooseCarry = doChooseCarry;
+window.doDropAll    = doDropAll;
+window.restartGame  = restartGame;
+window.toggleRules  = toggleRules;
+</script>
+</body>
+</html>

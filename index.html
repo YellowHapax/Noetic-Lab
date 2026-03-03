@@ -449,6 +449,10 @@
       <div class="dsk-icon-img" style="background:linear-gradient(135deg,#1a0d2a,#0d0818);color:#CE93D8;border:1px solid #3a1a4a;font-family:'JetBrains Mono',monospace;font-size:18px;">∑</div>
       <div class="dsk-icon-label">Formulas</div>
     </div>
+    <div class="dsk-icon" id="dsk-noetica" ondblclick="WM.focus('noetica')" onclick="selectDskIcon('dsk-noetica')">
+      <div class="dsk-icon-img" style="background:linear-gradient(135deg,#1a1200,#0d0e00);color:#DAA520;border:1px solid #3a2a00;font-family:'Playfair Display',serif;font-style:italic;font-size:14px;">N</div>
+      <div class="dsk-icon-label">Noetica</div>
+    </div>
   </div>
 </div>
 
@@ -485,6 +489,11 @@
   <div class="dock-item" id="dock-formulas" onclick="WM.focus('formulas')">
     <div class="dock-icon" style="background: linear-gradient(135deg,#1a0d2a,#0d0818); color:#CE93D8; border:1px solid #3a1a4a; font-family:'JetBrains Mono',monospace; font-size:20px;">∑</div>
     <div class="dock-label">Formulas</div>
+    <div class="dock-dot"></div>
+  </div>
+  <div class="dock-item" id="dock-noetica" onclick="WM.focus('noetica')">
+    <div class="dock-icon" style="background: linear-gradient(135deg,#1a1200,#0d0e00); color:#DAA520; border:1px solid #3a2a00; font-family:'Playfair Display',serif; font-style:italic; font-size:18px;">N</div>
+    <div class="dock-label">Noetica</div>
     <div class="dock-dot"></div>
   </div>
 </div>
@@ -708,6 +717,18 @@ function buildFormulasWindow() {
   WM.create({
     id: 'formulas', title: 'MBD · Formula Explorer', accentColor: '#CE93D8',
     x: 160, y: 50, w: 1020, h: 640, body, minimized: true
+  });
+}
+
+
+// ══════════════════════════════════════════════════════
+// Noetica — Strategy of Roads
+// ══════════════════════════════════════════════════════
+function buildNoeticaWindow() {
+  const body = `<iframe class="win-iframe" src="apps/noetica/index.html" id="noetica-iframe" loading="lazy" title="Noetica — Strategy of Roads"></iframe>`;
+  WM.create({
+    id: 'noetica', title: 'Noetica — Strategy of Roads', accentColor: '#DAA520',
+    x: 120, y: 55, w: 860, h: 600, body, minimized: true
   });
 }
 
@@ -1068,6 +1089,7 @@ window.addEventListener('load', () => {
   buildStellaWindow();
   buildBetWindow();
   buildFormulasWindow();
+  buildNoeticaWindow();
 
   setTimeout(() => { bar.style.width = '100%'; }, 800);
   setTimeout(() => {
