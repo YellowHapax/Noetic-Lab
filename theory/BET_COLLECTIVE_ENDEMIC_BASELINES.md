@@ -1,5 +1,5 @@
 # Bet: Collective Endemic Baselines
-## A Prototype Framework for Emergent Social Pathology
+## Accent Formation in Coupled Stochastic Systems
 
 **Series:** Noetic Lab · Process Documents  
 **Depends on:** MBD Core (Paper 1), The Endemic Baseline (Paper 7), The Suppressive and Emergent Phenomenon (Paper 8)  
@@ -12,11 +12,15 @@
 
 Paper 7 described the individual agent whose $B_{reference}$ was formed during chronic disruption. Paper 8 described how suppression of a deviant signal paradoxically strengthens it.
 
-This document describes what happens when you aggregate both conditions into a social structure.
+This document describes what happens when you aggregate both conditions into a social structure. The result is not a pathology — it is an *accent*.
 
-The result is not merely a "group with shared beliefs." It is a distinct computational entity — a **Collective Endemic Baseline (CEB)** — with its own state vector, its own novelty horizon, and its own immune response to correction. The CEB is not a metaphor. It is a system with measurable dynamics. Those dynamics are derived here from first principles.
+When you grow up speaking a particular language in a particular place, your mouth takes a shape. When minds couple under shared conditions, their collective baseline takes a shape too. This document calls that shape a **Collective Endemic Baseline (CEB)** — a system with its own state vector, its own novelty horizon, and its own characteristic response to unfamiliar input.
 
-The target phenomena include: political factions, radicalization pipelines, grief loops, codependent dyads, ideological cults, moral panics, and every -dere archetype in folk psychology. The framework does not discriminate. The math is the same.
+Consider the simplest case: two people who live together arguing about whose turn it is to do the dishes. The argument is not about dishes. It is about two baseline vectors — two sets of trained expectations about effort, fairness, rest, and recognition — that cannot both sit at minimum free energy in the same configuration. The squabble is the coupled system searching for a new equilibrium. Dish by dish, silence by silence, the system oscillates until it finds a resting state that both vectors can occupy without generating deviation signals. Sometimes it finds one. Sometimes it doesn't, and the coupling changes shape instead.
+
+This is not dysfunction. This is what resonant stochastic systems *do* — they self-stabilize toward states of least free energy. The shape of that minimum depends on the landscape: the formation history, the coupling strengths, the available input channels. Different landscapes produce different accents.
+
+The same dynamics operate at every scale. A couple negotiating bedtime. A friend group developing inside jokes that outsiders don't get. A fandom building shared vocabulary around a creator they love. A political faction sharpening its boundaries. The framework does not discriminate because the mechanism does not discriminate. The question is never *why is this group broken* — it is *what shape did the equilibrium take, given the terrain*.
 
 ---
 
@@ -418,6 +422,26 @@ def rezero_step(B_C, H_width, kappa, broker_signal, lam):
 
 ## Part VI: Applications
 
+### 6.0 On Petty Squabbles (Life-Vector Incompatibility)
+
+The most universal instance of CEB dynamics is the one no one recognizes as such: the petty squabble.
+
+Two people share a household. Person A's baseline expectation is that dishes are done immediately after meals — their $B_A$ was trained in a household where clean counters were the resting state. Person B's baseline is that dishes accumulate until a threshold and are done in batch — their $B_B$ was trained where efficiency, not tidiness, was the optimization target.
+
+Neither baseline is wrong. Both are stable equilibria for a single agent. The problem is that both agents now share a kitchen.
+
+The coupled system has two baseline vectors that cannot simultaneously occupy minimum free energy in the same configuration space. Dirty dishes in the sink: deviation signal for A, resting state for B. Clean dishes immediately: resting state for A, unnecessary exertion for B. Every state of the kitchen generates a deviation signal for at least one agent.
+
+$$\delta_A = \|S_{kitchen} - B_A\| \quad \delta_B = \|S_{kitchen} - B_B\|$$
+
+$$\min(\delta_A + \delta_B) > 0 \quad \text{for all reachable kitchen states}$$
+
+The squabble is the system oscillating around an equilibrium it hasn't found yet. The resolution — if one comes — is a new shared baseline that neither person carried into the relationship. A compromise: dishes done within an hour. A role allocation: one cooks, one cleans. Or a slow drift where one vector absorbs the other.
+
+This is life-vector incompatibility on a coupled stochastic system. The system *must* self-stabilize toward least free energy, and the path there is what the couple experiences as "working things out" or "growing apart." The math does not care which. It only requires that the oscillation damp.
+
+If you can see the dynamics in your own kitchen, you already have the intuition for every case that follows. Political polarization is two communities with incompatible kitchen-baselines sharing a country. A fandom is a community whose baseline formed around a specific coupling source. The accent is different. The mechanism is identical.
+
 ### 6.1 Template: Any Two-Faction Polarization
 
 Given two collectives $\mathcal{C}_A$ and $\mathcal{C}_B$ with baselines $B_A$ and $B_B$:
@@ -469,9 +493,13 @@ The following are reframings, not diagnoses. The framework makes no clinical cla
 
 In every case: the behavior is the correct output of a system with that $B_{reference}$. The question is never "why is this person broken" — it is "what state produced this baseline, and what inputs are currently unrepresentable."
 
-### 6.5 Template: Parasocial Collectives (Worked Example)
+### 6.5 The Parasocial Accent
 
-VTuber viewership communities provide perhaps the most cleanly instrumented instance of CEB dynamics currently available for open study. They offer quantitative engagement data with high temporal resolution, public record of both formation events (debut, early content, community norms) and disruption events, explicit in-group vocabulary that makes collective state legible, and crucially — sufficiently low stakes that the dynamics run without defensive confounding. The mechanisms are identical to higher-stakes cases. The measurement is easier.
+Every coupled system settles into a shape. VTuber viewership communities are one such shape — a collective accent formed through the ordinary process of minds coupling around shared input, developing shared vocabulary, and self-stabilizing toward a collective baseline that its members recognize as *theirs*.
+
+The superchat rituals, the clip ecosystem, the in-group terminology, the collective grief when a talent graduates — these are not symptoms. They are the accent. They are what the equilibrium sounds like when it speaks.
+
+What makes this particular accent worth examining in detail is not that VTuber communities are unusual — they are ordinary, following the same CEB dynamics as any friend group, any congregation, any neighborhood. What makes them *legible* is that the data is open: quantitative engagement metrics at high temporal resolution, public record of both formation events (debuts, content identity, community norms) and disruption events (controversies, graduations), explicit in-group vocabulary that makes the collective state readable from the outside. The stakes are low enough that the dynamics run without defensive confounding — the mechanism is visible here in a way it often isn't elsewhere.
 
 **Structural mapping:**
 
@@ -522,9 +550,9 @@ When a talent graduates, the coupling collapse dynamics of §6.2 run at collecti
 
 This sequence is documented in public forum archives for essentially every major graduation event since the category emerged. The simulation in §4.3 predicts it from first principles with no domain-specific tuning.
 
-**Why this example is load-bearing:**
+**Why this accent is legible:**
 
-The VTuber case is not decoration. It is a small-scale, low-stakes, well-instrumented instance of mechanisms that operate at higher stakes in other domains. The math is the same. The measurement challenge is lower. If the model fits the viewership distributions and graduation dynamics, it fits the mechanism — and that fit transfers. This is the appropriate first empirical target for anyone implementing the §VII checklist before scaling to domains where confounding is severe and data is harder to gather.
+The same dynamics govern every collective in this document — the political faction, the codependent dyad, the couple arguing about dishes. In most of those cases, the data is private, the stakes are high, and the system flinches when you try to measure it. Here, the data is public, the participants are vocal about their own collective state, and nobody's life is at stake. If the model fits the superchat distributions and the graduation grief dynamics, it fits the mechanism — because the mechanism is the same everywhere. The accent differs. The math does not.
 
 ---
 
@@ -563,11 +591,11 @@ To build models from this framework, you need:
 
 ## Closing Note
 
-Paper 7 established that the individual's baseline can be pathological from formation. Paper 8 established that suppression validates the deviant signal.
+Paper 7 established that the individual's baseline can form under conditions that make healthy input unrepresentable. Paper 8 established that suppression validates the deviant signal.
 
-**Bet** is the synthesis: these mechanisms, operating at collective scale and across time, are sufficient to explain the emergence and persistence of every major form of social pathology without invoking irrationality, malice, or deficiency on the part of any individual agent.
+**Bet** is the synthesis: these mechanisms, operating at collective scale and across time, produce the accents that collectives carry — from a couple's private shorthand to a nation's political fault lines — without requiring irrationality, malice, or deficiency on the part of any individual agent.
 
-The agents are doing the right thing. The system is doing the wrong thing. Those are different problems with different solutions.
+Every agent is doing the correct thing for the stimuli they have received. The accent is the shape of the equilibrium, not a flaw in the people speaking it.
 
 The Re-zeroing Protocol does not ask anyone to be wrong. It asks the horizon to be wider.
 
