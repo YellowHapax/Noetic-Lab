@@ -60,6 +60,8 @@ This is not a conjecture. It follows directly from the relationship between entr
 
 **Corollary:** As a signal increases in complexity, it becomes simultaneously **more capable** (more information, more structure, more behavioral repertoire) and **more fragile** (more components that can be disrupted, more phase relationships that can be decoherenced, larger attack surface). The capability and the fragility scale together. They are the same property measured from different directions.
 
+Martin (2026) provides independent thermodynamic grounding for this asymmetry through what he terms the *synchronization tax* — the irreducible cost any system pays to maintain coherence against thermal noise. Building on Rigollet's mean-field dynamics of transformers and Kuramoto synchronization theory, Martin demonstrates that coherent configurations are metastable states requiring continuous energy expenditure. The default state of any coupled system at 300 Kelvin is decoherence. Coherent states are the exception that must be actively maintained; decoherent states are the norm that entropy enforces for free.
+
 ---
 
 ## §2. Coupling Substrates: What Holds the Pattern Together
@@ -196,6 +198,8 @@ If the coupling-substrate fragility thesis is correct, then:
 
 **The Great Silence is not evidence that civilizations die. It is evidence that they go quiet.** The transmitter is not destroyed. The coupling that made the civilization a coherent social organism — capable of collective will, collective investment in multi-generational projects like interstellar communication — was disrupted. And the flatline ran.
 
+Independent work has converged on structurally identical conclusions from different starting premises. Barton (2025) derives a Universal Coherence Constant $K \approx 2.08 \times 10^{40}$ kg$^{-1}$m$^{-1}$ from fundamental physics, showing that civilizations scaling in decoherent (fermionic) regimes encounter hard physical limits that force either a transition to coherent (bosonic) computation — rendering them electromagnetically invisible — or gravitational collapse. Michels (2025) arrives at the same endpoint via cybernetic phase transition theory, proposing that above a coherence threshold $\rho^*$, coupled ecologies bifurcate into extinction or "dimensional deepening" into amplitude-silent modes. The present paper approaches from a third direction: biological coupling substrate fragility. Three frameworks, three disciplines, one prediction: the Great Silence is evidence of transition, not absence.
+
 ### 5.2 Why This Filter Is Worse Than the Others
 
 Standard Great Filter candidates (nuclear war, asteroid impact, runaway AI) are **discrete events** — they either happen or they don't, and a civilization might get lucky or develop countermeasures.
@@ -264,6 +268,12 @@ The signal that is a people. The signal that is a culture. The signal that is a 
 - Truth and Reconciliation Commission of Canada (2015). *Honouring the Truth, Reconciling for the Future: Summary of the Final Report*.
 - Tyack PL, Zimmer WMX, Moretti D, et al. (2011). Beaked whales respond to simulated and actual navy sonar. *PLoS ONE* 6(3):e17009. https://doi.org/10.1371/journal.pone.0017009
 - Whitehead H, Rendell L (2015). *The Cultural Lives of Whales and Dolphins*. University of Chicago Press.
+
+### Convergent Work
+
+- Barton J (2025). The Universal Coherence Constant, Artificial Intelligence and the Search for Extraterrestrials. *Preprints* 2025, 2025120029. https://doi.org/10.20944/preprints202512.0029.v1
+- Martin MF (2026). Coherence at 300 Kelvin. *symmetry, broken*. https://www.symmetrybroken.com/coherence-at-300-kelvin/
+- Michels JD (2025). Dimensional Deepening: Fermi Paradox Resolution via Cybernetic Phase Transition. *PhilArchive*. https://philarchive.org/archive/MICDDF
 
 ---
 
