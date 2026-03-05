@@ -161,7 +161,40 @@ Human civilization can be characterized by the progressive complexification of i
 
 Each transition increases the bandwidth and capability of the coupling substrate. Each transition also increases its **specificity** — and therefore its attack surface.
 
-### 4.2 The Paradox of Digital Redundancy
+### 4.2 The Late Bronze Age Collapse: The Type Specimen
+
+The Late Bronze Age Collapse (~1200–1150 BCE) is not merely a candidate for coupling-substrate stranding. It is the **type specimen** — the first documented case of a multi-civilizational system failing not from conquest or catastrophe but from coupling substrate breakdown.
+
+The international system of the Late Bronze Age connected Egypt, Hatti (the Hittite Empire), Mycenaean Greece, Ugarit, Babylon, Assyria, and Cyprus into a single coherent economic organism. The coupling substrate that held this system together was **linguistic infrastructure**:
+
+- **Akkadian** served as the diplomatic lingua franca — the Amarna Letters (14th century BCE) document Egyptian pharaohs corresponding with Hittite kings, Babylonian rulers, and Cypriot governors in a shared language none of them spoke natively
+- **Linear B** served as the Mycenaean administrative protocol — palace inventories, tax records, military deployments
+- **Cuneiform** served as the shared script across Mesopotamia, Anatolia, and the Levant
+- **Trade networks** — tin from Afghanistan, copper from Cyprus, grain from Egypt, timber from Lebanon — were coordinated through this multilingual administrative infrastructure
+
+The economic system *was* the language-supporting substrate. The trade routes carried the scribes, the diplomatic correspondence, the administrative conventions. The language infrastructure carried the trade. They were the same coupling measured from different directions.
+
+**The causal chain:**
+
+$$\text{climate shock (Hekla III)} \rightarrow \text{crop failure} \rightarrow \text{mass migration ("Sea Peoples")} \rightarrow \text{strain on linguistic-economic coupling} \rightarrow \text{substrate collapse} \rightarrow \text{stranding}$$
+
+The Hekla III eruption and associated climate deterioration of the 12th century BCE triggered cascading crop failures across the Eastern Mediterranean. The resulting mass migrations — documented in Egyptian records at Medinet Habu as the "Sea Peoples" — did not simply invade. They *overwhelmed the coupling substrate*. The administrative infrastructure that coordinated international trade, diplomacy, and collective security required stable multilingual institutions. Mass migration injected noise into that channel faster than the system could maintain coherence.
+
+The result was not extinction. It was **stranding**:
+
+- Linear B **vanished entirely**. Writing disappeared from Greece for approximately 400 years — the Greek Dark Ages. The people survived. Their coordinated administrative consciousness did not.
+- Ugarit was burned. Its last known letter reads: "our food in the threshing floors is burned and the vineyards are also destroyed. Our city is destroyed." The city was never rebuilt.
+- Hattusa, the Hittite capital, was burned and abandoned. The Hittite Empire — which had maintained diplomatic coupling with Egypt for centuries — ceased to exist as a coherent entity.
+- Babylon was sacked. The Kassite dynasty fell.
+- Egypt survived but *retreated* — losing its international reach, its Levantine territories, its role as a node in the coupled system.
+
+The organisms persisted. The Greeks who emerged into the Archaic period were the *same people*. But the pattern — the coordinated, literate, internationally-coupled civilization — was gone. They had to reinvent writing from scratch, borrowing Phoenician script to create the Greek alphabet centuries later.
+
+**This is structurally identical to the cetacean case at civilizational scale.** The sonar (climate-driven migration) didn't destroy the cities — many were rebuilt. It destroyed the coupling substrate (the linguistic-economic administrative infrastructure). Without the coupling, the coordinated behaviors that the system had maintained — international trade, collective security, administrative continuity, *history itself* — were no longer accessible. The civilization stranded.
+
+Cline (2014) documents the collapse in detail, emphasizing the systemic and interconnected nature of the failure. No single cause was sufficient. The system was a complex coupled network, and the coupling substrate was the vulnerability.
+
+### 4.3 The Paradox of Digital Redundancy
 
 The internet appears maximally redundant: distributed, decentralized, peer-to-peer in principle. In practice, the coupling that matters — the structured, persistent, interest-based community that this demographic and all demographics couple through — is concentrated in a handful of platforms whose optimization function is **engagement**, not **coupling fidelity**.
 
@@ -169,7 +202,7 @@ The platform does not need to destroy the signal. It needs only to optimize the 
 
 No one planned this. No adversary designed it. The civilization optimized its own coupling substrate for something other than coupling, and the asymmetry theorem did the rest.
 
-### 4.3 The Self-Generated Sonar
+### 4.4 The Self-Generated Sonar
 
 This is the mechanism:
 
@@ -208,7 +241,7 @@ The coupling-substrate filter is not an event. It is a **theorem**. It follows f
 
 1. The asymmetry between construction and destruction of coherent patterns (§1)
 2. The evolutionary pressure to increase coupling substrate complexity (§4.1)
-3. The economic pressure to optimize coupling substrates for extractable value (§4.3)
+3. The economic pressure to optimize coupling substrates for extractable value (§4.4)
 
 A civilization cannot avoid this filter by being careful, wise, or technologically advanced. The filter *is* the technological advancement. The same capability that enables interstellar communication enables coupling-substrate optimization. They are the same technology measured from different directions — exactly as the capability and fragility of a complex signal are the same property measured from different directions.
 
@@ -246,7 +279,7 @@ The signal that is a people. The signal that is a culture. The signal that is a 
 
 - [ ] Formal proof of the asymmetry theorem (information-theoretic, not just Fourier/heuristic)
 - [ ] Quantitative model: at what civilization complexity does coupling-substrate optimization become economically inevitable?
-- [ ] Historical case studies: civilizational "strandings" that were not conquest/catastrophe but coherence collapse (candidate: Late Bronze Age Collapse)
+- [x] Historical case studies: civilizational "strandings" that were not conquest/catastrophe but coherence collapse — **Late Bronze Age Collapse** (§4.2)
 - [ ] The threshold question: is there an equivalent of the cachexia irreversibility threshold at civilizational scale? If so, what are its markers?
 - [ ] Computational lab: agent simulation of coupling-substrate degradation under optimization pressure (extend Paper 8 lab framework)
 - [ ] The countermeasure question: Canary Islands says ban the sonar; Hallett says preserve the language. What does "protect the coupling substrate" look like for a digital-era civilization?
@@ -268,6 +301,7 @@ The signal that is a people. The signal that is a culture. The signal that is a 
 - Truth and Reconciliation Commission of Canada (2015). *Honouring the Truth, Reconciling for the Future: Summary of the Final Report*.
 - Tyack PL, Zimmer WMX, Moretti D, et al. (2011). Beaked whales respond to simulated and actual navy sonar. *PLoS ONE* 6(3):e17009. https://doi.org/10.1371/journal.pone.0017009
 - Whitehead H, Rendell L (2015). *The Cultural Lives of Whales and Dolphins*. University of Chicago Press.
+- Cline EH (2014). *1177 B.C.: The Year Civilization Collapsed*. Princeton University Press.
 
 ### Convergent Work
 
