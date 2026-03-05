@@ -84,6 +84,10 @@
     margin-bottom: 0.6em;
     padding-bottom: 0.2em;
     border-bottom: 1px solid var(--rule);
+    break-before: page;
+  }
+  h2:first-of-type {
+    break-before: auto; /* Abstract stays with title block */
   }
   h3 {
     font-family: var(--font-heading);
@@ -192,7 +196,8 @@
     html { font-size: 11pt; }
     body { padding: 0; max-width: none; }
     .title-block { page-break-after: avoid; }
-    h2 { page-break-after: avoid; }
+    h2 { break-before: page; page-break-after: avoid; }
+    h2:first-of-type { break-before: auto; }
     h3 { page-break-after: avoid; }
     table { page-break-inside: avoid; }
     .chain { page-break-inside: avoid; }
