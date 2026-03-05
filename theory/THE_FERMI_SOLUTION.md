@@ -3,7 +3,7 @@
 **Subtitle:** Coupling Substrate Fragility as a Universal Filter — Why the Great Silence Is a Stranding, Not an Extinction
 
 **Author:** Brandon Everett
-**ORCID:** [0000-0001-7521-5469](https://orcid.org/0000-0001-7521-5469)
+**ORCID:** [0009-0007-6676-4897](https://orcid.org/0009-0007-6676-4897)
 **Series:** Memory as Baseline Deviation — Theoretical Extensions
 **Depends on:** Paper 7 (Endemic Baseline), Paper 8 (Suppressive and Emergent Phenomenon), The Gate (Cross-Phylum Self-Disengagement Cascade)
 **Date:** 2026-03-04
