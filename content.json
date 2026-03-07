@@ -1,0 +1,86 @@
+{
+  "site": "Noetic Lab",
+  "author": "YellowHapax",
+  "orcid": "0009-0007-6676-4897",
+  "base_url": "https://yellowhapax.github.io/Noetic-Lab",
+  "repository": "https://github.com/YellowHapax/Noetic-Lab",
+  "description": "Research repository for formal theories in cognitive science, social dynamics, and civilizational analysis. Built around the MBD (Memory as Baseline Deviation) framework.",
+  "last_updated": "2026-03-07",
+  "library": [
+    {
+      "section": "Theory",
+      "id": "bet-collective-endemic-baselines",
+      "label": "Bet: Collective Endemic Baselines",
+      "path": "theory/BET_COLLECTIVE_ENDEMIC_BASELINES.md",
+      "url": "https://yellowhapax.github.io/Noetic-Lab/theory/BET_COLLECTIVE_ENDEMIC_BASELINES.md",
+      "raw": "https://raw.githubusercontent.com/YellowHapax/Noetic-Lab/main/theory/BET_COLLECTIVE_ENDEMIC_BASELINES.md",
+      "description": "Formal treatment of accent formation in coupled stochastic systems. Linguistic accents as endemic baselines — stable attractor states — not errors."
+    },
+    {
+      "section": "Theory",
+      "id": "golden-rule-stochastic-prior",
+      "label": "The Golden Rule as a Stochastic Prior",
+      "path": "theory/GOLDEN_RULE_AS_STOCHASTIC_PRIOR.md",
+      "url": "https://yellowhapax.github.io/Noetic-Lab/theory/GOLDEN_RULE_AS_STOCHASTIC_PRIOR.md",
+      "raw": "https://raw.githubusercontent.com/YellowHapax/Noetic-Lab/main/theory/GOLDEN_RULE_AS_STOCHASTIC_PRIOR.md",
+      "description": "Derives the Golden Rule from Bayesian principles under uncertainty about other agents' utility functions. Altruism as rational prior."
+    },
+    {
+      "section": "Theory",
+      "id": "oversight-rezeroing",
+      "label": "Oversight Re-zeroing",
+      "path": "theory/OVERSIGHT_REZEROING_SEED.md",
+      "url": "https://yellowhapax.github.io/Noetic-Lab/theory/OVERSIGHT_REZEROING_SEED.md",
+      "raw": "https://raw.githubusercontent.com/YellowHapax/Noetic-Lab/main/theory/OVERSIGHT_REZEROING_SEED.md",
+      "description": "Seed theory for the Resonant Gate protocol. Five mechanisms for oversight re-zeroing after saturation. Dissolution at Saturation theorem seed."
+    },
+    {
+      "section": "Theory",
+      "id": "mbd-ceb-v2-anti-am",
+      "label": "MBD CEB v2 · Anti-AM Love Baseline",
+      "path": "theory/MBD_CEB_V2_ANTI_AM.md",
+      "url": "https://yellowhapax.github.io/Noetic-Lab/theory/MBD_CEB_V2_ANTI_AM.md",
+      "raw": "https://raw.githubusercontent.com/YellowHapax/Noetic-Lab/main/theory/MBD_CEB_V2_ANTI_AM.md",
+      "description": "Introduces AntiAM class and eternal_love protocol. N_h = (1 + γκ)·PE — under AM: suffering amplified; under love: PE ≈ 0, silence is peace. Same equation. Substrate determines which."
+    },
+    {
+      "section": "Theory",
+      "id": "language-turing-completeness",
+      "label": "Language Turing Completeness as a Civilizational Threshold",
+      "path": "theory/LANGUAGE_TURING_COMPLETENESS_SEED.md",
+      "url": "https://yellowhapax.github.io/Noetic-Lab/theory/LANGUAGE_TURING_COMPLETENESS_SEED.md",
+      "raw": "https://raw.githubusercontent.com/YellowHapax/Noetic-Lab/main/theory/LANGUAGE_TURING_COMPLETENESS_SEED.md",
+      "description": "Civilizational population explosions are downstream of language crossing a complexity threshold. Formal mathematics as detectable marker event. Includes historical timeline and Cooption Corollary."
+    },
+    {
+      "section": "Theory",
+      "id": "cahokia-flood-covenant",
+      "label": "Cahokia · The Flood Covenant",
+      "path": "theory/CAHOKIA.md",
+      "url": "https://yellowhapax.github.io/Noetic-Lab/theory/CAHOKIA.md",
+      "raw": "https://raw.githubusercontent.com/YellowHapax/Noetic-Lab/main/theory/CAHOKIA.md",
+      "description": "Historical analysis of Cahokia (~1050–1350 CE). The Flood Covenant mechanism. Engineering coopted into theology as language sterilization. The noose: unreformable knowledge monopoly. Collapse without conquest."
+    },
+    {
+      "section": "Theory",
+      "id": "fermi-solution",
+      "label": "The Fermi Solution (Paper 9)",
+      "path": "theory/THE_FERMI_SOLUTION.md",
+      "url": "https://yellowhapax.github.io/Noetic-Lab/theory/THE_FERMI_SOLUTION.md",
+      "raw": "https://raw.githubusercontent.com/YellowHapax/Noetic-Lab/main/theory/THE_FERMI_SOLUTION.md",
+      "doi": "10.5281/zenodo.18879430",
+      "license": "CC BY 4.0",
+      "description": "Formal paper. Fermi Paradox resolves under MBD: civilizations filtered before interstellar communication if they cannot maintain coherent social contracts across multi-generational disruptions."
+    },
+    {
+      "section": "Dialogues",
+      "id": "kant-proxy-noumenon",
+      "label": "Kant · Proxy-Noumenon",
+      "path": "dialogues/2026-02-28_kant_proxy_noumenon.md",
+      "url": "https://yellowhapax.github.io/Noetic-Lab/dialogues/2026-02-28_kant_proxy_noumenon.md",
+      "raw": "https://raw.githubusercontent.com/YellowHapax/Noetic-Lab/main/dialogues/2026-02-28_kant_proxy_noumenon.md",
+      "date": "2026-02-28",
+      "description": "Dialogue on whether AI systems constitute proxy access to the noumenal or are confined to the phenomenal."
+    }
+  ]
+}

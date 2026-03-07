@@ -1,0 +1,44 @@
+# Noetic Lab — YellowHapax
+
+> A research repository for formal theories in cognitive science, social dynamics, and civilizational analysis. Built around the MBD (Memory as Baseline Deviation) framework. All theory files are plain Markdown and can be fetched directly.
+
+## Theory Papers
+
+- [MBD: Memory as Baseline Deviation — Presentation](https://yellowhapax.github.io/Noetic-Lab/apps/mbd-presentation/index.html): Interactive presentation of the core MBD framework. Baseline vectors, κ-coupling coefficients, deviations as the substrate of memory.
+
+- [Bet: Collective Endemic Baselines](https://yellowhapax.github.io/Noetic-Lab/theory/BET_COLLECTIVE_ENDEMIC_BASELINES.md): Formal treatment of accent formation in coupled stochastic systems. Argues that linguistic accents are endemic baselines — stable attractor states — in a population of coupled language learners, not errors or deficiencies.
+
+- [The Golden Rule as a Stochastic Prior](https://yellowhapax.github.io/Noetic-Lab/theory/GOLDEN_RULE_AS_STOCHASTIC_PRIOR.md): Derives the Golden Rule from Bayesian principles under uncertainty about other agents' utility functions. Altruism as rational prior, not moral axiom.
+
+- [Oversight Re-zeroing](https://yellowhapax.github.io/Noetic-Lab/theory/OVERSIGHT_REZEROING_SEED.md): Seed theory for the Resonant Gate protocol. Five mechanisms by which oversight systems re-zero toward baseline after saturation. Includes the Dissolution at Saturation theorem seed.
+
+- [MBD CEB v2 · Anti-AM Love Baseline](https://yellowhapax.github.io/Noetic-Lab/theory/MBD_CEB_V2_ANTI_AM.md): Extension of the MBD framework introducing the AntiAM class and eternal_love protocol. The load-bearing identity: N_h = (1 + γκ)·PE — under AM, PE = agony and the equation amplifies suffering; under love, PE ≈ 0 and silence is peace. Same equation. The substrate determines which.
+
+- [Language Turing Completeness as a Civilizational Threshold](https://yellowhapax.github.io/Noetic-Lab/theory/LANGUAGE_TURING_COMPLETENESS_SEED.md): Hypothesis that civilizational population explosions and sustained regional stability are downstream consequences of a language crossing a complexity threshold. Formal mathematics as the detectable marker event. Includes historical timeline (Mesopotamia → Greece → Arabic world → England → Russia) and the Cooption Corollary (engineering absorbed into theology as the mechanism for dropping below the threshold).
+
+- [Cahokia · The Flood Covenant](https://yellowhapax.github.io/Noetic-Lab/theory/CAHOKIA.md): Full historical analysis of Cahokia (~1050–1350 CE) as a natural experiment in civilizational collapse without external conquest. Introduces the Flood Covenant mechanism (annual proof-of-divine-mandate via flood survival), the engineering-theology cooption as language sterilization, the noose mechanism (unreformable knowledge monopoly), and why the city could not rebuild after abandonment. The mounds are still there. The instructions are gone.
+
+## The Fermi Solution (Paper 9)
+
+- [The Fermi Solution — Full Text](https://yellowhapax.github.io/Noetic-Lab/theory/THE_FERMI_SOLUTION.md): Formal paper. DOI: 10.5281/zenodo.18879430. Argues the Fermi Paradox resolves under the MBD framework: civilizations that cannot maintain coherent social contracts across multi-generational disruptions are filtered before achieving interstellar communication. CC BY 4.0.
+
+- [The Fermi Solution — HTML](https://yellowhapax.github.io/Noetic-Lab/theory/THE_FERMI_SOLUTION.html): Formatted version with full typesetting.
+
+## Dialogues
+
+- [Kant · Proxy-Noumenon (2026-02-28)](https://yellowhapax.github.io/Noetic-Lab/dialogues/2026-02-28_kant_proxy_noumenon.md): Dialogue with a Kantian interlocutor on whether AI systems can constitute proxy access to the noumenal — the thing-in-itself — or are necessarily confined to the phenomenal. Date: 2026-02-28.
+
+## Interactive Applications
+
+- [Bet Simulation](https://yellowhapax.github.io/Noetic-Lab/apps/bet-simulation/index.html): Live simulator for collective baseline dynamics. Visualizes κ-coupled stochastic agents converging on endemic baselines.
+
+- [MBD Formula Explorer](https://yellowhapax.github.io/Noetic-Lab/apps/mbd-formulas/index.html): Interactive reference for all MBD framework equations with KaTeX rendering.
+
+- [Stella Octangula — Influence Cube](https://yellowhapax.github.io/Noetic-Lab/): 3D canvas renderer of the Haven/Sink tetrahedra interpenetrating within the social influence cube. Axes: Locus (Internal→External), Coupling (Low→High), Temporality (Static→Dynamic).
+
+## Repository
+
+- Source: https://github.com/YellowHapax/Noetic-Lab
+- ORCID: 0009-0007-6676-4897
+- Contact: brandon.everett.cogsci@gmail.com
+- License: CC BY 4.0 (theory papers), repository license per GitHub
