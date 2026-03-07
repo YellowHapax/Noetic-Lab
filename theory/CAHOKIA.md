@@ -8,11 +8,15 @@
 
 ## Overview
 
-Cahokia (~600–1350 CE, peak ~1050–1200 CE) was the largest pre-Columbian city north of Mexico, located at the confluence of the Missouri, Illinois, and Mississippi rivers near present-day St. Louis. At its height it housed an estimated 10,000–20,000 people within the city proper and perhaps 50,000 in the surrounding metro. It had monumental architecture, a stratified priestly-aristocratic class, long-distance trade networks spanning the continent, a sophisticated solar calendar, and no writing system.
+Cahokia (~600–1350 CE, peak ~1050–1200 CE) was the largest pre-Columbian city north of Mexico, located at the confluence of the Missouri, Illinois, and Mississippi rivers near present-day St. Louis. At its height it housed an estimated 10,000–20,000 people within the city proper and perhaps 50,000 in the surrounding metro. It had monumental architecture, a stratified priestly-aristocratic class, long-distance trade networks spanning the continent, a sophisticated solar calendar, copper metallurgy sourced from the Great Lakes, and no writing system.
+
+The copper point matters. These were not technologically naive people. Lake Superior copper had been worked in the Great Lakes region since at least 3000 BCE — cold-hammered into tools, ornaments, and ceremonial objects that moved along trade networks stretching from the Gulf Coast to the Canadian Shield. Cahokia sat at the center of that network. The elite had access to the finest materials on the continent and demonstrated sophisticated planning over generations. Monks Mound is not a monument of ignorance. It is a monument of *organized, sustained, technically competent effort* across centuries.
+
+The collapse therefore cannot be blamed on incapacity.
 
 It collapsed without conquest and left no descendant civilization capable of explaining itself.
 
-This document is a historical analysis of *why* — and argues that the collapse was structurally overdetermined by the same mechanism that made the city possible: a social contract built entirely on embodied, unwritten, spatially-encoded divine authority.
+This document is a historical analysis of *why* — and argues that the collapse was structurally overdetermined by the same mechanism that made the city possible: a social contract built entirely on embodied, unwritten, hierarchically-concentrated authority. Language, in Cahokia's configuration, was not a scaffold for the civilization. It was the noose the priest class hung the whole society from. When the priest class built the water reservoir on the wrong side of the hill, people didn't revolt. They left. And there was nothing written down to reform.
 
 ---
 
@@ -132,7 +136,38 @@ They took their knowledge with them, in their heads, where it fragmented and spe
 
 ---
 
-## VII. Why It Could Not Rebuild
+## VII. The Noose: When the Knowledge Monopoly Fails
+
+The priest class's power rested on a single claim: *we know things you don't, and our knowledge keeps you alive.*
+
+This claim was true. For generations. The calendar worked. The flood predictions held. The redistribution system functioned. The copper trade brought goods. The city grew because the knowledge at its center was genuinely useful and genuinely concentrated in people who had been trained for decades to hold it.
+
+The problem is structural, not personal. A knowledge monopoly without external verification is also a **failure monopoly without accountability.** 
+
+When the priest class built the water reservoir on the wrong side of the hill — when some planning decision, however reasonable it seemed at the time, turned an asset into a liability, or failed to materialize as promised — there was no mechanism for:
+
+- Identifying who made the decision
+- Challenging whether it was the right decision
+- Replacing the decision-makers without dissolving the entire legitimacy structure they represented
+- Writing down "do not do this again"
+
+In a city governed by written law, a bad administrative decision is recoverable. The decision can be documented, attributed, challenged in an institutional forum, reversed by a successor, and archived as a cautionary record. The institution survives the bad decision because the institution is larger than any individual who runs it.
+
+In Cahokia, the institution *was* the individuals who ran it. The priest class was the calendar. The chief was the divine mandate. There was no daylight between the person and the office — and no text that could outlive the person.
+
+So when the bad decision became visible — when the reservoir silted, or failed to fill, or bred disease, or the promised harvest didn't materialize, or the flood came anyway and the mound district offered no benefit — the population did the only thing available to them:
+
+**They left.**
+
+Not in revolt. Revolt would require a counter-institution, a written grievance, a legal framework to appeal to. Instead, the quiet vote: families packed and walked into the surrounding territory. Joined smaller communities. The city bled out over a century.
+
+This is the noose. Language as the exclusive medium of authority means that the authority can only be challenged by abandoning the language community entirely. There is no loyal opposition. There is no reform caucus. There is only here, with the priest class who may or may not have gotten something badly wrong, or there, somewhere else, starting over.
+
+The same mechanism that made Cahokia's social contract legible — embodied, demonstrated, personally vouched for by living experts — made it unreformable. The language was the noose, and the priest class was standing on the trapdoor.
+
+---
+
+## VIII. Why It Could Not Rebuild
 
 After abandonment, the site was not re-occupied at scale. This is the theoretically important fact.
 
@@ -150,7 +185,7 @@ Cahokia had no monasteries. It had mounds and memory, and when the memory walked
 
 ---
 
-## VIII. The Deeper Structure
+## IX. The Deeper Structure
 
 The Flood Covenant is a specific instance of a general pattern:
 
@@ -166,7 +201,7 @@ Then it stopped working, and there was nothing behind it.
 
 ---
 
-## IX. Relations to Other Work
+## X. Relations to Other Work
 
 **Language Turing Completeness (this repo):** Cahokia is the cleanest single case in the seed. The collapse timeline maps directly onto the oral-tradition fault tolerance argument. All the specific mechanisms elaborated here (calendar monopoly, Flood Covenant, chunkey as contract substitute) are instances of complexity without compression.
 
