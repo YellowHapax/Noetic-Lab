@@ -42,3 +42,26 @@
 - ORCID: 0009-0007-6676-4897
 - Contact: brandon.everett.cogsci@gmail.com
 - License: CC BY 4.0 (theory papers), repository license per GitHub
+
+## Framework Implementation
+
+The theory papers in this library are built on the MBD (Memory as Baseline Deviation) framework. The computational implementation — 18 standalone simulation labs across 6 papers — lives in a separate repository:
+
+- Repository: https://github.com/YellowHapax/MBD-Framework
+- DOI: 10.5281/zenodo.18652919
+- Core equation: B(t+1) = B(t)·(1−λ) + I(t)·λ
+  An agent's personality is a vector in state space. Every significant experience shifts that vector. λ is how deeply the event rewrites who you are.
+
+Papers with DOIs:
+
+| # | Title | DOI |
+|---|-------|-----|
+| 1 | Memory as Baseline Deviation | 10.5281/zenodo.17381536 |
+| 2 | In Pursuit of the Markov Tensor | 10.5281/zenodo.17537185 |
+| 3 | Episodic Recall as Resonant Re-instantiation | 10.5281/zenodo.17374270 |
+| 4 | The Coupling Asymmetry | 10.5281/zenodo.18519187 |
+| 5 | The Emergent Gate | 10.5281/zenodo.17344091 |
+| 6 | The Resonant Gate | 10.5281/zenodo.17352481 |
+| 9 | The Fermi Solution (this repo) | 10.5281/zenodo.18879430 |
+
+To traverse the full loop: read the theory papers here → run the labs in MBD-Framework → the Fermi Solution (Paper 9, this repo) closes the arc from individual cognition to civilizational filter.

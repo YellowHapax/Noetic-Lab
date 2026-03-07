@@ -6,6 +6,23 @@
   "repository": "https://github.com/YellowHapax/Noetic-Lab",
   "description": "Research repository for formal theories in cognitive science, social dynamics, and civilizational analysis. Built around the MBD (Memory as Baseline Deviation) framework.",
   "last_updated": "2026-03-07",
+  "framework": {
+    "name": "MBD-Framework",
+    "description": "Computational implementation of the Memory as Baseline Deviation framework. 18 standalone simulation labs across 6 papers. The theory papers in Noetic Lab are built on this framework.",
+    "repository": "https://github.com/YellowHapax/MBD-Framework",
+    "doi": "10.5281/zenodo.18652919",
+    "core_equation": "B(t+1) = B(t)·(1−λ) + I(t)·λ",
+    "papers": [
+      { "number": 1, "title": "Memory as Baseline Deviation",                   "doi": "10.5281/zenodo.17381536", "labs": 6 },
+      { "number": 2, "title": "In Pursuit of the Markov Tensor",                "doi": "10.5281/zenodo.17537185", "labs": 1 },
+      { "number": 3, "title": "Episodic Recall as Resonant Re-instantiation",   "doi": "10.5281/zenodo.17374270", "labs": 1 },
+      { "number": 4, "title": "The Coupling Asymmetry",                          "doi": "10.5281/zenodo.18519187", "labs": 5 },
+      { "number": 5, "title": "The Emergent Gate",                               "doi": "10.5281/zenodo.17344091", "labs": 2 },
+      { "number": 6, "title": "The Resonant Gate",                               "doi": "10.5281/zenodo.17352481", "labs": 3 },
+      { "number": 9, "title": "The Fermi Solution (Noetic Lab)",                 "doi": "10.5281/zenodo.18879430", "labs": 0 }
+    ],
+    "traversal_note": "To complete the loop: read theory papers in Noetic Lab → run labs in MBD-Framework → The Fermi Solution (Paper 9) closes the arc from individual cognition to civilizational filter."
+  },
   "library": [
     {
       "section": "Theory",
