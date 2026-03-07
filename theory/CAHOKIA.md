@@ -136,7 +136,27 @@ They took their knowledge with them, in their heads, where it fragmented and spe
 
 ---
 
-## VII. The Noose: When the Knowledge Monopoly Fails
+## VII. The Cooption: Engineering Becomes Theology
+
+Before the noose, there is the knot. The mechanism that made Cahokia unreformable was not simply that the priest class held power. It was *what they did with the engineering class.*
+
+Cahokia required genuine technical expertise: hydraulic planning, astronomical observation, large-scale logistics, copper metallurgy, mound construction geometry. These are engineering problems with empirical answers. A reservoir either holds water or it doesn't. A solar alignment either predicts the solstice or it's wrong. The people who solved these problems were, functionally, engineers — specialists whose authority derived from demonstrable results.
+
+At some point in Cahokia's development, the religious class absorbed the engineering class. The astronomer became the priest-astronomer. The hydraulic planner became the sacred-ground-keeper. The copper-worker's output became ceremonial object rather than tool. **Engineering knowledge was converted from a generative, falsifiable substrate into a theological one.**
+
+This conversion looks like an upgrade in status. The engineer is now sacred. Their knowledge is now divine. But the transformation is actually a sterilization.
+
+Engineering knowledge is self-correcting by structure: did the reservoir hold? Did the harvest come? Falsifiability is not a philosophical luxury — it is the mechanism by which any knowledge system updates itself against reality. When the engineer is also the priest, questioning the reservoir's placement becomes questioning the divine mandate. The failure of a hydraulic project becomes a spiritual crisis, not a technical one, and spiritual crises are not solved by moving the intake pipe.
+
+The language — the full set of concepts and distinctions available to the community — loses its capacity for self-modification at exactly this point. A Turing-complete language can rewrite its own instructions. A theologically frozen language cannot. Every concept that matters has been assigned a sacred interpretation, and sacred interpretations do not accept patches.
+
+The result is not immediate collapse. The city continues to function for generations on the accumulated engineering capital of the pre-cooption period. The reservoirs that were built correctly still work. The calendar alignments that were surveyed accurately still predict the solstice. But the capacity to build new correctly-functioning reservoirs — to *learn from the ones that didn't* — is gone. The civilization is now running on read-only memory.
+
+When the read-only memory encounters a problem it wasn't written to solve, there is no write path. People leave.
+
+---
+
+## VIII. The Noose: When the Knowledge Monopoly Fails
 
 The priest class's power rested on a single claim: *we know things you don't, and our knowledge keeps you alive.*
 
@@ -167,7 +187,7 @@ The same mechanism that made Cahokia's social contract legible — embodied, dem
 
 ---
 
-## VIII. Why It Could Not Rebuild
+## IX. Why It Could Not Rebuild
 
 After abandonment, the site was not re-occupied at scale. This is the theoretically important fact.
 
@@ -185,7 +205,7 @@ Cahokia had no monasteries. It had mounds and memory, and when the memory walked
 
 ---
 
-## IX. The Deeper Structure
+## X. The Deeper Structure
 
 The Flood Covenant is a specific instance of a general pattern:
 
@@ -201,7 +221,7 @@ Then it stopped working, and there was nothing behind it.
 
 ---
 
-## X. Relations to Other Work
+## XI. Relations to Other Work
 
 **Language Turing Completeness (this repo):** Cahokia is the cleanest single case in the seed. The collapse timeline maps directly onto the oral-tradition fault tolerance argument. All the specific mechanisms elaborated here (calendar monopoly, Flood Covenant, chunkey as contract substitute) are instances of complexity without compression.
 

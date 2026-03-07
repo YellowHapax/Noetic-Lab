@@ -69,6 +69,20 @@ Compare: Mesopotamia gets sacked, absorbed, conquered, absorbed again — the cu
 
 ---
 
+## The Cooption Corollary: Engineering Absorbed into Theology
+
+A specific sterilization pathway, illustrated clearly by Cahokia:
+
+When the engineering class (astronomers, hydraulic planners, metallurgists) is absorbed into the religious legitimacy structure, their knowledge undergoes a phase transition from *generative* to *ceremonial*. Engineering knowledge is falsifiable by design — the reservoir either holds water or it doesn't. Theological knowledge is immune to falsification by design — the divine plan is not subject to empirical review.
+
+The cooption converts falsifiable knowledge into sacred knowledge. The language loses its self-modification capacity from the inside. Every concept that carries weight is assigned a sacred interpretation, and sacred interpretations do not accept patches.
+
+This is distinct from simple knowledge concentration. The knowledge doesn't just become *scarce* — it becomes *non-revisable*. The civilization is now running on read-only memory. It can execute what it was written to execute. It cannot respond to problems it wasn't written to solve.
+
+**The cooption of engineering by religion is the mechanism by which a language drops below the Turing completeness threshold from a previously higher position.** It is not a gradual fade. It is a phase transition. The moment the astronomer becomes the priest-astronomer, the community loses access to the astronomer.
+
+---
+
 ## The Degeneracy Corollary
 
 The inverse also holds. Languages *simplify* under conditions of:
