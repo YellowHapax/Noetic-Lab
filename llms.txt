@@ -24,6 +24,8 @@
 
 - [The Fermi Solution — HTML](https://yellowhapax.github.io/Noetic-Lab/theory/THE_FERMI_SOLUTION.html): Formatted version with full typesetting.
 
+- [The 52 Hz Whale: The Monk Hypothesis](https://yellowhapax.github.io/Noetic-Lab/theory/52BLUE_MONK_HYPOTHESIS.md): Zipfian linguistics framework for cetacean broadcast communication. Argues the 52 Hz whale is not an isolated, deformed animal but a dedicated relay node on a collision-free channel audible to all mysticetes. Blue-fin hybridization ("flue whales") reframed as emergent communication infrastructure rather than evolutionary dead-end. Falsification criteria via Zipf exponent α, Shannon entropy, and cross-frequency temporal correlation. MBD baseline analysis: deviation ≈ 0 over 30 years = fulfilled function, not distress.
+
 ## Dialogues
 
 - [Kant · Proxy-Noumenon (2026-02-28)](https://yellowhapax.github.io/Noetic-Lab/dialogues/2026-02-28_kant_proxy_noumenon.md): Dialogue with a Kantian interlocutor on whether AI systems can constitute proxy access to the noumenal — the thing-in-itself — or are necessarily confined to the phenomenal. Date: 2026-02-28.

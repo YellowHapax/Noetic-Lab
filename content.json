@@ -90,6 +90,15 @@
       "description": "Formal paper. Fermi Paradox resolves under MBD: civilizations filtered before interstellar communication if they cannot maintain coherent social contracts across multi-generational disruptions."
     },
     {
+      "section": "Theory",
+      "id": "52blue-monk-hypothesis",
+      "label": "The 52 Hz Whale: The Monk Hypothesis",
+      "path": "theory/52BLUE_MONK_HYPOTHESIS.md",
+      "url": "https://yellowhapax.github.io/Noetic-Lab/theory/52BLUE_MONK_HYPOTHESIS.md",
+      "raw": "https://raw.githubusercontent.com/YellowHapax/Noetic-Lab/main/theory/52BLUE_MONK_HYPOTHESIS.md",
+      "description": "Zipfian linguistics framework for cetacean broadcast communication. Argues the 52 Hz whale is not isolated but a dedicated relay node on a collision-free channel audible to all mysticetes. Formalizes the Monk Hypothesis with falsification criteria via Zipf exponent, Shannon entropy, and cross-frequency correlation. Integrates blue-fin hybridization as emergent communication infrastructure under the MBD framework."
+    },
+    {
       "section": "Dialogues",
       "id": "kant-proxy-noumenon",
       "label": "Kant · Proxy-Noumenon",
