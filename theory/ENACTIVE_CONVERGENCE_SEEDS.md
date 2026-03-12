@@ -82,10 +82,31 @@ This is not a claim about linguistic relativity in the Sapir-Whorf sense. It is 
 
 ---
 
+## V. Addendum: Jin's Deeper Claim — L-Spaces Make Sense to Beings Raised in L-Spaces
+
+> *"He's talking about how L-spaces make logical sense to beings raised in L-spaces."*
+
+My initial reading of Jin was too narrow. I characterized him as reinventing λ from a philosophy of language angle — natural selection tuned plasticity coefficients to match environmental statistics. But the claim is structurally deeper.
+
+Jin is not just saying that the *content* of mental files is shaped by the local environment. He is saying that the *organizing logic* of the files — what counts as a natural kind, what property clusters cohere, what distinctions warrant their own file rather than being subsumed under another — is attuned to the organizational logic of the specific environment the agent developed in. The files make logical sense because the environment they were built in has that logic. Agents raised in a different L-space would have files with a different internal logic — not just different content, but different *structure of coherence*.
+
+This is a direct hit on H. In MBD, H is the set of states representable by the agent. Jin is saying H is not species-universal — it is L-space-specific. The topology of H (which distinctions are crisp, which are fuzzy, what the natural joints are) was shaped by developmental embedding in a particular environment. Two agents with identical species membership but different developmental L-spaces will have Horizons with different internal geometries, not just different regions populated.
+
+This is the correct framing for Point IV (the mall seed above). It is not just that the subject lacks "mall" as a content item in B(t). It is that the subject's H may not have the *type* of schema that "mall" instantiates — a navigable indoor commercial grid with disorientation potential — as a coherent category at all. If that schema-type doesn't exist in H, no amount of content description creates it. You cannot implant an instance of a category that H does not contain.
+
+The difference between "lacks content" and "lacks the logical structure for that content" is the difference between an empty folder and a filesystem that doesn't support that directory type.
+
+This also reframes the Zipfian linguistic point more precisely. The reason word substitution fails across languages is not merely that different words appear with different frequencies. It is that the categorical geometry of the file system was built by language acquisition in a specific L-space, and the logical partitions those languages carve are not isomorphic. You cannot translate "mall" to "mercado" and preserve the implantation paradigm because the category of navigable-indoor-commercial-disorientation-space may not be a native partition in the target H at all.
+
+Jin probably does not formalize this. His frame is rational analysis + evolutionary teleology; the H-topology consequence is implicit. But it is the most powerful version of his claim, and it is directly tractable in MBD once you accept that H is developmental and L-space-specific rather than universal.
+
+---
+
 ## Relations to Existing Work
 
 - **Zhang & Zahidi (2026)**: These four observations extend the taxonomy they are building. Point III gives the mechanism they lack for differential susceptibility to implantation. Point IV shows their implanted-memory category needs to be subdivided by Horizon precondition. They likely do not address cultural specificity.  
-- **MBD Papers 1–6**: Points I and III are directly derivable from the core equation + κ dynamics. Points II and IV are architectural constraints rather than derivations.  
+- **Jin (2026)**: Section V above gives the MBD interpretation of his deepest claim. The design perspective he applies to mental files lands in H-topology if you follow it through. His reference to natural kinds and property cluster structures is a claim about the local geometry of H, not just about content.
+- **MBD Papers 1–6**: Points I and III are directly derivable from the core equation + κ dynamics. Points II, IV, and V are architectural constraints on H rather than derivations from the core equation.  
 - **Fermi Solution (Paper 9)**: Point I (learned helplessness as prior-assigned near-zero probability) and Point III (κ-amplified confabulation as social vector for scapegoating) both have civilizational analogs — civilizations that have tried certain institutional experiments and failed may assign near-zero probability to re-attempting them, even when conditions change. That's a note for later.
 
 ---
